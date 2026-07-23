@@ -1,0 +1,295 @@
+from flask import Flask, jsonify, request, session, render_template
+from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+import mysql.connector
+import anthropic
+import json
+
+app = Flask(__name__)
+app.secret_key = 'my-secret-key-2026'
+CORS(app, supports_credentials=True)
+app.config['JSON_AS_ASCII'] = False
+client = anthropic.Anthropic(api_key="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")
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='0000',
+        database='sahb_taskes'
+    )
+
+@app.route('/')
+def home():
+    return render_template('login.html')
+
+@app.route('/login-page')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/app-page')
+def app_page():
+    if 'user_id' not in session:
+        return render_template('login.html')
+    return render_template('index.html', username=session['username'])
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "اسم المستخدم موجود مسبقًا"}), 400
+
+    hashed_password = generate_password_hash(password)
+    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({"message": "تم إنشاء الحساب بنجاح"}), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if user and check_password_hash(user['password'], password):
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        return jsonify({"message": "تم تسجيل الدخول بنجاح", "username": user['username']}), 200
+
+    return jsonify({"error": "اسم المستخدم أو كلمة المرور غير صحيحة"}), 401
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({"message": "تم تسجيل الخروج"}), 200
+
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM tasks WHERE user_id = %s", (session['user_id'],))
+    user_tasks = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return jsonify(user_tasks)
+
+@app.route('/tasks', methods=['POST'])
+def add_task():
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    data = request.get_json()
+    title = data['title']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO tasks (title, done, user_id) VALUES (%s, %s, %s)",
+                   (title, False, session['user_id']))
+    conn.commit()
+
+    new_task_id = cursor.lastrowid
+    cursor.close()
+    conn.close()
+
+    return jsonify({"id": new_task_id, "title": title, "done": False}), 201
+
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM tasks WHERE id = %s", (task_id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({"message": "تم الحذف"}), 200
+
+@app.route('/tasks/<int:task_id>/toggle', methods=['PUT'])
+def toggle_task(task_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT done FROM tasks WHERE id = %s", (task_id,))
+    task = cursor.fetchone()
+
+    new_status = not task['done']
+    cursor.execute("UPDATE tasks SET done = %s WHERE id = %s", (new_status, task_id))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({"id": task_id, "done": new_status}), 200
+
+@app.route('/tasks/<int:task_id>/analyze', methods=['GET'])
+def analyze_task(task_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT title FROM tasks WHERE id = %s", (task_id,))
+    task = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not task:
+        return jsonify({"error": "المهمة غير موجودة"}), 404
+
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=300,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"هذي مهمة: \"{task['title']}\". اكتب لي أولاً ملخص قصير جداً لها (سطر واحد)، وبعدها اقترح 3 إلى 5 خطوات عملية لتنفيذها. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي قبله أو بعده: {{\"summary\": \"...\", \"steps\": [\"...\", \"...\"]}}"
+                }
+            ]
+        )
+
+        raw_text = message.content[0].text.strip()
+
+        if raw_text.startswith("```"):
+            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+
+        parsed = json.loads(raw_text)
+
+        return jsonify(parsed), 200
+
+    except Exception as e:
+        print("=== خطأ بالذكاء الاصطناعي ===")
+        print(str(e))
+        print("==========================")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    data = request.get_json()
+    user_message = data['message']
+
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=500,
+            system="أنت مساعد ذكي داخل تطبيق إدارة مهام اسمه Priora. إذا سألك أحد من طوّر هذا التطبيق أو من صممه، أجب بأن المطور هو عبدالله علي الحربي.",
+            messages=[
+                {"role": "user", "content": user_message}
+            ]
+        )
+
+        reply = message.content[0].text
+        return jsonify({"reply": reply}), 200
+
+    except Exception as e:
+        print("=== خطأ بالشات بوت ===")
+        print(str(e))
+        print("==========================")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/admin')
+def admin_page():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not user or not user['is_admin']:
+        return "غير مصرح لك بالدخول لهذي الصفحة", 403
+
+    return render_template('admin.html')
+
+@app.route('/admin/users', methods=['GET'])
+def admin_get_users():
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+    current_user = cursor.fetchone()
+
+    if not current_user or not current_user['is_admin']:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "غير مصرح"}), 403
+
+    cursor.execute("SELECT id, username, is_admin FROM users")
+    all_users = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT tasks.id, tasks.title, tasks.done, users.username
+        FROM tasks
+        JOIN users ON tasks.user_id = users.id
+    """)
+    all_tasks = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"users": all_users, "tasks": all_tasks})
+
+@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+    current_user = cursor.fetchone()
+
+    if not current_user or not current_user['is_admin']:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "غير مصرح"}), 403
+
+    cursor.execute("DELETE FROM tasks WHERE user_id = %s", (user_id,))
+    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "تم حذف المستخدم"}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)

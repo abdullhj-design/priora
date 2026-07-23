@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تسجيل الدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 35px;
+            width: 320px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #764ba2;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            background-color: white;
+            color: #764ba2;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            background-color: #764ba2;
+            color: white;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-family: 'Tajawal', Arial, sans-serif;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #764ba2;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-family: 'Tajawal', Arial, sans-serif;
+            font-weight: 500;
+            background-color: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.submit-btn:hover {
+            background-color: #5e3a85;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .message.error {
+            color: #e74c3c;
+        }
+
+        .message.success {
+            color: #27ae60;
+        }
+
+        .hidden {
+            display: none;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-img {
+            width: 100px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    
+        <div class="card">
+    <div class="logo-container">
+        <img src="/static/images/logo.png" alt="Priora Logo" class="logo-img">
+    </div>
+    <h1>أنجز مهامك بذكاء</h1>
+    
+
+        <div class="tabs">
+            <div class="tab active" id="loginTab">تسجيل دخول</div>
+            <div class="tab" id="registerTab">حساب جديد</div>
+        </div>
+
+        <div id="loginForm">
+            <input type="text" id="loginUsername" placeholder="👤 الاسم" >
+            <input type="password" id="loginPassword" placeholder="🔒 كلمة المرور">
+            <button class="submit-btn" id="loginBtn">دخول</button>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <input type="text" id="registerUsername" placeholder="👤 الاسم">
+            <input type="password" id="registerPassword" placeholder="🔒 كلمة المرور">
+            <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
+        </div>
+
+        <div id="messageBox" class="message"></div>
+    </div>
+
+    <script>
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const messageBox = document.getElementById('messageBox');
+
+        loginTab.addEventListener('click', function() {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            messageBox.textContent = '';
+        });
+
+        registerTab.addEventListener('click', function() {
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            messageBox.textContent = '';
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username: username, password: password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageBox.textContent = data.message;
+                messageBox.className = 'message success';
+                setTimeout(function() {
+                    window.location.href = '/app-page';
+                }, 1000);
+            } else {
+                messageBox.textContent = data.error;
+                messageBox.className = 'message error';
+            }
+        });
+
+        document.getElementById('registerBtn').addEventListener('click', async function() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, password: password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageBox.textContent = data.message + ' — سجّل دخولك الآن';
+                messageBox.className = 'message success';
+                loginTab.click();
+            } else {
+                messageBox.textContent = data.error;
+                messageBox.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>
