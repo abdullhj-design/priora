@@ -4,20 +4,23 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 import anthropic
 import json
+import os
 
 app = Flask(__name__)
 app.secret_key = 'my-secret-key-2026'
 CORS(app, supports_credentials=True)
 app.config['JSON_AS_ASCII'] = False
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 def get_db_connection():
     return mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='0000',
-        database='sahb_taskes'
+        host=os.environ.get('MYSQLHOST', 'localhost'),
+        user=os.environ.get('MYSQLUSER', 'root'),
+        password=os.environ.get('MYSQLPASSWORD', '0000'),
+        database=os.environ.get('MYSQLDATABASE', 'sahb_taskes'),
+        port=os.environ.get('MYSQLPORT', 3306)
     )
+    
 
 @app.route('/')
 def home():
