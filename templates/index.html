@@ -349,6 +349,58 @@
 .celebration-overlay.hidden {
     display: none !important;
 }
+.daily-summary-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.daily-summary-overlay.hidden {
+    display: none !important;
+}
+
+.daily-summary-box {
+    background: linear-gradient(135deg, #1a1a2e 0%, #4a3b6e 100%);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 340px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.daily-summary-box h2 {
+    color: #fff;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.daily-summary-box .summary-line {
+    color: #e0e0e0;
+    font-size: 15px;
+    margin-bottom: 12px;
+    text-align: right;
+}
+
+.daily-summary-box .farewell {
+    color: #ffd700;
+    font-size: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.daily-summary-box button {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 25px;
+}
 .celebration-box {
     background-color: white;
     border-radius: 16px;
@@ -410,6 +462,16 @@
         <button id="closeCelebration">حسنًا</button>
     </div>
 </div>
+<div id="dailySummaryOverlay" class="daily-summary-overlay hidden">
+    <div class="daily-summary-box">
+        <h2>🌙 ملخص يومك ✨</h2>
+        <div class="summary-line" id="summaryDone"></div>
+        <div class="summary-line" id="summaryRemaining"></div>
+        <div class="summary-line" id="summaryPercent"></div>
+        <div class="farewell">أحسنت! نراك غدًا بيوم جديد 👋</div>
+        <button id="closeDailySummary">حسنًا</button>
+    </div>
+</div>
 
 <div id="chatButton" class="chat-button">💬</div>
 
@@ -454,6 +516,31 @@ const nextTaskBox = document.getElementById('nextTaskBox');
 const nextTaskName = document.getElementById('nextTaskName');
 const nextTaskReason = document.getElementById('nextTaskReason');
 let savedOrder = null;
+const dailySummaryOverlay = document.getElementById('dailySummaryOverlay');
+const closeDailySummary = document.getElementById('closeDailySummary');
+let dailySummaryShown = false;
+
+closeDailySummary.addEventListener('click', function() {
+    dailySummaryOverlay.classList.add('hidden');
+});
+
+function checkDailySummary(tasks) {
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    if (currentHour >= 21 && !dailySummaryShown) {
+        const doneCount = tasks.filter(function(t) { return t.done; }).length;
+        const remainingCount = tasks.length - doneCount;
+        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+
+        document.getElementById('summaryDone').textContent = '✅ أنجزت ' + doneCount + ' مهام';
+        document.getElementById('summaryRemaining').textContent = '⏳ تبقى ' + remainingCount + ' مهام';
+        document.getElementById('summaryPercent').textContent = '🎯 نسبة الإنجاز ' + percent + '%';
+
+        dailySummaryOverlay.classList.remove('hidden');
+        dailySummaryShown = true;
+    }
+}
 
 closeCelebration.addEventListener('click', function() {
     celebrationOverlay.classList.add('hidden');
@@ -572,6 +659,7 @@ closeCelebration.addEventListener('click', function() {
                 const li = createTaskElement(task);
                 taskList.appendChild(li);
             });
+            checkDailySummary(tasks);
         }
 
         addButton.addEventListener('click', async function() {
