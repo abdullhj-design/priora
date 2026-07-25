@@ -6,6 +6,9 @@ import mysql.connector
 import anthropic
 import json
 import os
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.secret_key = 'my-secret-key-2026'
@@ -334,6 +337,23 @@ def prioritize_tasks():
         print("=== خطأ بترتيب المهام ===")
         print(str(e))
         return jsonify({"error": str(e)}), 500
+        
+def delete_completed_tasks():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tasks WHERE done = 1")
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print(f"[{datetime.now()}] تم حذف المهام المكتملة تلقائيًا")
+    except Exception as e:
+        print(f"[{datetime.now()}] خطأ بحذف المهام: {str(e)}")
+
+scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Riyadh'))
+scheduler.add_job(delete_completed_tasks, 'cron', hour=2, minute=0)
+scheduler.start()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
