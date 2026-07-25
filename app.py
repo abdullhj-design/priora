@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = 'my-secret-key-2026'
 CORS(app, supports_credentials=True)
 app.config['JSON_AS_ASCII'] = False
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(api_key="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")
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -290,6 +290,46 @@ def admin_delete_user(user_id):
     conn.close()
 
     return jsonify({"message": "تم حذف المستخدم"}), 200
+@app.route('/tasks/prioritize', methods=['GET'])
+def prioritize_tasks():
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, title FROM tasks WHERE user_id = %s AND done = 0", (session['user_id'],))
+    tasks = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not tasks:
+        return jsonify({"message": "لا توجد مهام غير مكتملة لترتيبها"}), 200
+
+    tasks_list = "\n".join([f"- {t['title']}" for t in tasks])
+
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=500,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"هذي قائمة مهام المستخدم اليوم:\n{tasks_list}\n\nرتّبها من الأهم للأقل أهمية، وحدد أي مهمة يبدأ بها أولاً مع سبب قصير. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي: {{\"start_with\": \"...\", \"reason\": \"...\", \"ordered\": [\"...\", \"...\"]}}"
+                }
+            ]
+        )
+
+        raw_text = message.content[0].text.strip()
+        if raw_text.startswith("```"):
+            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+
+        parsed = json.loads(raw_text)
+        return jsonify(parsed), 200
+
+    except Exception as e:
+        print("=== خطأ بترتيب المهام ===")
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

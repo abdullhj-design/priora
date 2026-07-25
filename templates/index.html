@@ -235,7 +235,19 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             z-index: 1000;
+            animation: pulse-chat 2s infinite;
         }
+        @keyframes pulse-chat {
+    0% {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0.6);
+    }
+    70% {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(118, 75, 162, 0);
+    }
+    100% {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0);
+    }
+}
 
         .chat-window {
             position: fixed;
@@ -283,6 +295,7 @@
             border-radius: 8px;
             max-width: 85%;
             line-height: 1.4;
+            white-space: pre-line;
         }
 
         .chat-msg.user {
@@ -316,10 +329,50 @@
             font-size: 13px;
         }
         .top-logo {
-            width: 60px;
+            width: 100px;
             height: auto;
             margin-bottom: 8px;
         }
+        .celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.celebration-overlay.hidden {
+    display: none !important;
+}
+.celebration-box {
+    background-color: white;
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 320px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.celebration-box h2 {
+    color: #764ba2;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.celebration-box p {
+    color: #666;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.celebration-box button {
+    background-color: #764ba2;
+    padding: 10px 25px;
+}
     </style>
 </head>
 <body>
@@ -330,23 +383,39 @@
     </div>
 
     <div class="card">
+<div id="prioritizeResult" style="display: none; background-color: #f7f6fb; border-radius: 8px; padding: 15px; margin-bottom: 30px; font-size: 14px; line-height: 1.6;"></div>
         <div class="input-group">
             <input type="text" id="taskInput" placeholder="اكتب مهمة جديدة...">
             <button id="addBtn">➕ إضافة</button>
         </div>
 
         <p id="taskCounter" class="task-counter"></p>
+        <div id="nextTaskBox" class="next-task-box hidden">
+    <div class="label">🎯 مهمتك التالية</div>
+    <div class="task-name" id="nextTaskName"></div>
+    <div class="reason" id="nextTaskReason"></div>
+</div>
         <ul id="taskList">
         </ul>
         <p id="emptyMsg" class="empty-msg hidden">لا توجد مهام حاليًا 📭</p>
         <div id="loadingMsg">⏳ جاري التحميل...</div>
-    </div>
+<button id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
 
-    <div id="chatButton" class="chat-button">💬</div>
+    </div>
+<div id="celebrationOverlay" class="celebration-overlay hidden">
+    <div class="celebration-box">
+<h2>أحسنت! 🎉</h2>       
+ <p>أنجزت جميع مهامك اليوم.</p>
+        <button id="closeCelebration">حسنًا</button>
+    </div>
+</div>
+
+<div id="chatButton" class="chat-button">💬</div>
+
 
     <div id="chatWindow" class="chat-window hidden">
         <div class="chat-header">
-            <span>مساعد Priora 🤖</span>
+            <span> Priora AI🤖</span>
             <span id="closeChat" class="close-chat">✕</span>
         </div>
         <div id="chatMessages" class="chat-messages"></div>
@@ -377,6 +446,17 @@
         const loadingMsg = document.getElementById('loadingMsg');
         const taskCounter = document.getElementById('taskCounter');
         const emptyMsg = document.getElementById('emptyMsg');
+        const celebrationOverlay = document.getElementById('celebrationOverlay');
+const closeCelebration = document.getElementById('closeCelebration');
+let celebrationShown = false;
+const nextTaskBox = document.getElementById('nextTaskBox');
+const nextTaskName = document.getElementById('nextTaskName');
+const nextTaskReason = document.getElementById('nextTaskReason');
+let savedOrder = null;
+
+closeCelebration.addEventListener('click', function() {
+    celebrationOverlay.classList.add('hidden');
+});
 
         function createTaskElement(task) {
             const li = document.createElement('li');
@@ -392,8 +472,9 @@
             buttonsDiv.classList.add('task-buttons');
 
             const analyzeButton = document.createElement('button');
-            analyzeButton.textContent = '🤖';
+            analyzeButton.textContent = '🤖حلّل المهمة';
             analyzeButton.classList.add('analyze-btn');
+            analyzeButton.title = 'حلّل هذه المهمة';
 
             analyzeButton.addEventListener('click', async function() {
                 analyzeButton.textContent = '⏳';
@@ -419,16 +500,17 @@
             });
 
             const completeButton = document.createElement('button');
-            completeButton.textContent = '✅ تمت';
+            completeButton.textContent = '✅ تم';
             completeButton.classList.add('complete-btn');
 
             completeButton.addEventListener('click', async function() {
-                await fetch('/tasks/' + task.id + '/toggle', {
-                    method: 'PUT',
-                    credentials: 'include'
-                });
-                loadTasks();
-            });
+    await fetch('/tasks/' + task.id + '/toggle', {
+        method: 'PUT',
+        credentials: 'include'
+    });
+    await loadTasks();
+    showNextTask();
+});
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = '🗑️';
@@ -454,6 +536,7 @@
 
         async function loadTasks() {
             loadingMsg.style.display = 'block';
+            prioritizeResult.style.display = 'none';
             taskList.innerHTML = '';
 
             const response = await fetch('/tasks', {
@@ -470,13 +553,19 @@
             loadingMsg.style.display = 'none';
 
             if (tasks.length === 0) {
-                taskCounter.textContent = '';
-                emptyMsg.classList.remove('hidden');
-            } else {
-                const doneCount = tasks.filter(function(t) { return t.done; }).length;
-                taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
-                emptyMsg.classList.add('hidden');
-            }
+    taskCounter.textContent = '';
+    emptyMsg.classList.remove('hidden');
+    celebrationShown = false;
+} else {
+    const doneCount = tasks.filter(function(t) { return t.done; }).length;
+    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
+    emptyMsg.classList.add('hidden');
+
+    if (doneCount === tasks.length && !celebrationShown) {
+        celebrationOverlay.classList.remove('hidden');
+        celebrationShown = true;
+    }
+}
 
             tasks.forEach(function(task) {
                 const li = createTaskElement(task);
@@ -526,13 +615,21 @@
         const chatInput = document.getElementById('chatInput');
         const chatSendBtn = document.getElementById('chatSendBtn');
 
-        chatButton.addEventListener('click', function() {
-            chatWindow.classList.toggle('hidden');
-        });
+       
 
-        closeChat.addEventListener('click', function() {
-            chatWindow.classList.add('hidden');
-        });
+        let chatOpened = false;
+
+chatButton.addEventListener('click', function() {
+    chatWindow.classList.toggle('hidden');
+
+    if (!chatOpened && !chatWindow.classList.contains('hidden')) {
+        addChatMessage('👋 مرحبًا ' + username + '، أنا Priora AI\nكيف يمكنني مساعدتك؟', 'bot');
+        chatOpened = true;
+    }
+});
+closeChat.addEventListener('click', function() {
+    chatWindow.classList.add('hidden');
+});
 
         function addChatMessage(text, sender) {
             const msgDiv = document.createElement('div');
@@ -573,7 +670,70 @@
             }
         });
 
-        loadTasks();
-    </script>
+const prioritizeBtn = document.getElementById('prioritizeBtn');
+const prioritizeResult = document.getElementById('prioritizeResult');
+
+prioritizeBtn.addEventListener('click', async function() {
+    prioritizeBtn.textContent = '⏳ جاري الترتيب...';
+    prioritizeResult.style.display = 'none';
+
+    try {
+        const response = await fetch('/tasks/prioritize', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
+        if (data.message) {
+            prioritizeResult.innerHTML = data.message;
+            prioritizeResult.style.display = 'block';
+            return;
+        }
+
+        if (data.start_with) {
+                savedOrder = data.ordered;
+
+            let orderedList = data.ordered.map(function(t, i) {
+                return (i + 1) + '. ' + t;
+            }).join('<br>');
+
+            prioritizeResult.innerHTML =
+                '<strong>🎯 ابدأ بـ: ' + data.start_with + '</strong><br>' +
+                '<span style="color:#888;">' + data.reason + '</span><br><br>' +
+                '<strong>خطتك لليوم:</strong><br>' + orderedList;
+            prioritizeResult.style.display = 'block';
+        } else {
+            prioritizeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
+            prioritizeResult.style.display = 'block';
+        }
+    } catch (err) {
+        prioritizeBtn.textContent = '🤖 رتّب يومي';
+        prioritizeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
+        prioritizeResult.style.display = 'block';
+    }
+});
+function showNextTask() {
+    if (!savedOrder) {
+        nextTaskBox.classList.add('hidden');
+        return;
+    }
+
+    const doneTitles = Array.from(document.querySelectorAll('#taskList li.completed .task-text'))
+        .map(function(el) { return el.textContent; });
+
+    const next = savedOrder.find(function(title) {
+        return doneTitles.indexOf(title) === -1;
+    });
+
+    if (next) {
+        nextTaskName.textContent = next;
+        nextTaskBox.classList.remove('hidden');
+    } else {
+        nextTaskBox.classList.add('hidden');
+    }
+}
+
+loadTasks();    
+</script>
 </body>
 </html>
