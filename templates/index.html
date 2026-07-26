@@ -646,8 +646,17 @@ closeCelebration.addEventListener('click', function() {
     celebrationShown = false;
 } else {
     const doneCount = tasks.filter(function(t) { return t.done; }).length;
+    const remainingCount = tasks.length - doneCount;
+
+if (remainingCount === 0) {
     taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
-    emptyMsg.classList.add('hidden');
+} else if (remainingCount === 1) {
+    taskCounter.textContent = '🔥 الأخيرة! أنجزها وتكون أكملت جميع مهام اليوم.';
+} else if (remainingCount <= 3) {
+    taskCounter.textContent = '🏁 باقي القليل! تبقى لك ' + remainingCount + ' مهام فقط لإنهاء يومك.';
+} else {
+    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
+}    emptyMsg.classList.add('hidden');
 
     if (doneCount === tasks.length && !celebrationShown) {
         celebrationOverlay.classList.remove('hidden');
