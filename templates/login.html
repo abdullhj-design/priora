@@ -146,8 +146,10 @@
         </div>
 
         <div id="registerForm" class="hidden">
-            <input type="text" id="registerUsername" placeholder="👤 الاسم">
-            <input type="password" id="registerPassword" placeholder="🔒 كلمة المرور">
+<div style="display: flex; gap: 10px;">
+    <input type="text" id="registerFirstName" placeholder=" الاسم الأول" style="flex: 1;">
+    <input type="text" id="registerLastName" placeholder="اسم العائلة" style="flex: 1;">
+</div>            <input type="password" id="registerPassword" placeholder="🔒 كلمة المرور">
             <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
         </div>
 
@@ -203,7 +205,14 @@
         });
 
         document.getElementById('registerBtn').addEventListener('click', async function() {
-            const username = document.getElementById('registerUsername').value.trim();
+            const firstName = document.getElementById('registerFirstName').value.trim();
+const lastName = document.getElementById('registerLastName').value.trim();
+if (firstName === '' || lastName === '') {
+    alert('الرجاء إدخال الاسم الأول واسم العائلة');
+    return;
+}
+const username = firstName + ' ' + lastName;
+
             const password = document.getElementById('registerPassword').value.trim();
 
             const response = await fetch('/register', {
