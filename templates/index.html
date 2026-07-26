@@ -757,22 +757,29 @@ closeChat.addEventListener('click', function() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function sendChatMessage() {
-            const text = chatInput.value.trim();
-            if (text === '') return;
+       async function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (text === '') return;
 
-            addChatMessage(text, 'user');
-            chatInput.value = '';
+    addChatMessage(text, 'user');
+    chatInput.value = '';
 
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ message: text })
-            });
+    const typingMsg = document.createElement('div');
+    typingMsg.classList.add('chat-msg', 'bot');
+    typingMsg.textContent = '⏳ Priora AI يرد عليك الآن...';
+    typingMsg.id = 'typingIndicator';
+    chatMessages.appendChild(typingMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    const response = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message: text })
+    });
 
             const data = await response.json();
-
+            document.getElementById('typingIndicator').remove();
             if (data.reply) {
                 addChatMessage(data.reply, 'bot');
             } else {
