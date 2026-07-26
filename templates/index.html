@@ -150,7 +150,15 @@
             padding: 6px 12px;
             font-size: 14px;
         }
+.pin-btn {
+    background-color: #f39c12;
+    padding: 6px 10px;
+    font-size: 14px;
+}
 
+.pin-btn:hover {
+    background-color: #d68910;
+}
         .analyze-btn:hover {
             background-color: #5e3a85;
         }
@@ -563,6 +571,17 @@ closeCelebration.addEventListener('click', function() {
             analyzeButton.textContent = '🤖حلّل المهمة';
             analyzeButton.classList.add('analyze-btn');
             analyzeButton.title = 'حلّل هذه المهمة';
+            const pinButton = document.createElement('button');
+pinButton.textContent = task.pinned ? '📌' : '📍';
+pinButton.classList.add('pin-btn');
+
+pinButton.addEventListener('click', async function() {
+    await fetch('/tasks/' + task.id + '/pin', {
+        method: 'PUT',
+        credentials: 'include'
+    });
+    loadTasks();
+});
 
             analyzeButton.addEventListener('click', async function() {
                 analyzeButton.textContent = '⏳';
@@ -613,6 +632,7 @@ closeCelebration.addEventListener('click', function() {
                 loadTasks();
             });
 
+            buttonsDiv.appendChild(pinButton);
             buttonsDiv.appendChild(analyzeButton);
             buttonsDiv.appendChild(completeButton);
             buttonsDiv.appendChild(deleteButton);
