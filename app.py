@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, session, render_template
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
-import anthropic
+from google import genai
 import json
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.secret_key = 'my-secret-key-2026'
 CORS(app, supports_credentials=True)
 app.config['JSON_AS_ASCII'] = False
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -172,18 +172,12 @@ def analyze_task(task_id):
         return jsonify({"error": "المهمة غير موجودة"}), 404
 
     try:
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=300,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"هذي مهمة: \"{task['title']}\". اكتب لي أولاً ملخص قصير جداً لها (سطر واحد)، وبعدها اقترح 3 إلى 5 خطوات عملية لتنفيذها. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي قبله أو بعده: {{\"summary\": \"...\", \"steps\": [\"...\", \"...\"]}}"
-                }
-            ]
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=f"هذي مهمة: \"{task['title']}\". اكتب لي أولاً ملخص قصير جداً لها (سطر واحد)، وبعدها اقترح 3 إلى 5 خطوات عملية لتنفيذها. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي قبله أو بعده: {{\"summary\": \"...\", \"steps\": [\"...\", \"...\"]}}"
         )
 
-        raw_text = message.content[0].text.strip()
+        raw_text = response.text.strip()
 
         if raw_text.startswith("```"):
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
@@ -207,16 +201,13 @@ def chat():
     user_message = data['message']
 
     try:
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=500,
-            system="أنت مساعد ذكي داخل تطبيق إدارة مهام اسمه Priora. إذا سألك أحد من طوّر هذا التطبيق أو من صممه، أجب بأن المطور هو عبدالله علي الحربي.",
-            messages=[
-                {"role": "user", "content": user_message}
-            ]
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            config={"system_instruction": "أنت مساعد ذكي داخل تطبيق إدارة مهام اسمه Priora. إذا سألك أحد من طوّر هذا التطبيق أو من صممه، أجب بأن المطور هو عبدالله علي الحربي."},
+            contents=user_message
         )
 
-        reply = message.content[0].text
+        reply = response.text
         return jsonify({"reply": reply}), 200
 
     except Exception as e:
@@ -315,18 +306,12 @@ def prioritize_tasks():
     tasks_list = "\n".join([f"- {t['title']}" for t in tasks])
 
     try:
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=500,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"هذي قائمة مهام المستخدم اليوم:\n{tasks_list}\n\nرتّبها من الأهم للأقل أهمية، وحدد أي مهمة يبدأ بها أولاً مع سبب قصير. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي: {{\"start_with\": \"...\", \"reason\": \"...\", \"ordered\": [\"...\", \"...\"]}}"
-                }
-            ]
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=f"هذي قائمة مهام المستخدم اليوم:\n{tasks_list}\n\nرتّبها من الأهم للأقل أهمية، وحدد أي مهمة يبدأ بها أولاً مع سبب قصير. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي: {{\"start_with\": \"...\", \"reason\": \"...\", \"ordered\": [\"...\", \"...\"]}}"
         )
 
-        raw_text = message.content[0].text.strip()
+        raw_text = response.text.strip()
         if raw_text.startswith("```"):
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 
