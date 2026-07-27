@@ -37,17 +37,20 @@
             align-items: center;
             margin-bottom: 20px;
         }
-
-        .logout-btn {
-            background: none;
-            border: 1px solid white;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: 'Tajawal', Arial, sans-serif;
-        }
+.logout-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: 1px solid white;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Tajawal', Arial, sans-serif;
+    z-index: 1500;
+}
 
         .card {
             background-color: white;
@@ -436,6 +439,13 @@
     background-color: #764ba2;
     padding: 10px 25px;
 }
+.streak-text {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: center;
+}
 .daily-goal-box {
     background-color: #fef9e7;
     border: 2px solid #f1c40f;
@@ -492,6 +502,7 @@
         <img src="/static/images/logo2.png" alt="Priora Logo" class="top-logo">
         <h1 id="greeting"></h1>
         <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+        <p id="streakDisplay" class="streak-text"></p>
     </div>
 
     <div class="card">
@@ -501,7 +512,10 @@
             <button id="addBtn">➕ إضافة</button>
         </div>
 
-        <p id="taskCounter" class="task-counter"></p>  
+        <p id="taskCounter" class="task-counter"></p> 
+        <div id="streakBox" class="streak-box hidden">
+    🔥 <span id="streakCount"></span> أيام متتالية
+</div> 
         <div id="dailyGoalBox" class="daily-goal-box hidden">
     <div class="label">⭐ هدف اليوم</div>
     <div id="dailyGoalName" class="goal-name"></div>
@@ -936,6 +950,43 @@ function showNextTask() {
     }
 }
 
+const streakMessages = [
+    'ابدأ سلسلتك اليوم 🔥',
+    'أول يوم! بداية موفقة 👏',
+    'يومان متتاليان! استمر 🔥',
+    '3 أيام! بدأت تبني عادة جميلة',
+    '4 أيام! حافظ على استمراريتك',
+    '5 أيام! تقدم رائع 👏',
+    '6 أيام! بقي يوم واحد على أسبوع كامل',
+    '7 أيام! أكملت أسبوعًا كاملًا 🎉',
+    '8 أيام! بداية أسبوع جديد، استمر',
+    '9 أيام! استمراريتك تصنع الفرق',
+    '10 أيام! وصلت للرقمين 🔥',
+    '11 يومًا! سلسلة تستحق الحفاظ عليها',
+    '12 يومًا! اقتربت من أسبوعين',
+    '13 يومًا! يومان فقط على أسبوعين',
+    '14 يومًا! أسبوعان كاملان 🎉',
+    '15 يومًا! 15 يومًا من الاستمرارية 👑'
+];
+
+async function loadStreak() {
+    const response = await fetch('/streak', {
+        credentials: 'include'
+    });
+    const data = await response.json();
+    const streak = data.streak;
+
+    let message;
+    if (streak < streakMessages.length) {
+        message = streakMessages[streak];
+    } else {
+        message = streak + ' يومًا من الاستمرارية! أنت أسطورة 👑';
+    }
+
+    document.getElementById('streakDisplay').textContent = '🔥 ' + message;
+}
+
+loadStreak();
 loadTasks();    
 </script>
 </body>
