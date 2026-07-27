@@ -38,10 +38,9 @@
             margin-bottom: 20px;
         }
 .logout-btn {
-    position: -webkit-sticky;
-    position: sticky;
+    position: fixed !important;
     top: 20px;
-    float: right;
+    right: 20px;
     background: none;
     border: 1px solid white;
     color: white;
@@ -50,7 +49,7 @@
     font-size: 13px;
     cursor: pointer;
     font-family: 'Tajawal', Arial, sans-serif;
-    z-index: 1500;
+    z-index: 9999;
 }
 
         .card {
@@ -499,11 +498,11 @@
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <img src="/static/images/logo2.png" alt="Priora Logo" class="top-logo">
-        <h1 id="greeting"></h1>
-        <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
-        <p id="streakDisplay" class="streak-text"></p>
+    <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+
+<div class="top-bar">
+    <img src="/static/images/logo2.png" alt="Priora Logo" class="top-logo">
+    <h1 id="greeting"></h1>
     </div>
 
     <div class="card">
