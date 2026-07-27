@@ -987,7 +987,13 @@ async function loadStreak() {
 }
 
 loadStreak();
-loadTasks();    
+loadTasks(); 
+window.addEventListener('scroll', function() {
+    const btn = document.getElementById('logoutBtn');
+    btn.style.position = 'fixed';
+    btn.style.top = '20px';
+    btn.style.right = '20px';
+});   
 </script>
 </body>
 </html>
