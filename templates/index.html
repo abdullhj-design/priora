@@ -434,6 +434,55 @@
     background-color: #764ba2;
     padding: 10px 25px;
 }
+.daily-goal-box {
+    background-color: #fef9e7;
+    border: 2px solid #f1c40f;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.daily-goal-box .label {
+    font-size: 13px;
+    color: #b7950b;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.daily-goal-box .goal-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.next-task-box {
+    background-color: #fff3e0;
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.next-task-box .label {
+    font-size: 13px;
+    color: #e65100;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.next-task-box .task-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.next-task-box .reason {
+    font-size: 12px;
+    color: #888;
+}
     </style>
 </head>
 <body>
@@ -450,8 +499,12 @@
             <button id="addBtn">➕ إضافة</button>
         </div>
 
-        <p id="taskCounter" class="task-counter"></p>
-        <div id="nextTaskBox" class="next-task-box hidden">
+        <div id="dailyGoalBox" class="daily-goal-box hidden">
+    <div class="label">⭐ هدف اليوم</div>
+    <div id="dailyGoalName" class="goal-name"></div>
+</div>
+
+<div id="nextTaskBox" class="next-task-box hidden">
     <div class="label">🎯 مهمتك التالية</div>
     <div class="task-name" id="nextTaskName"></div>
     <div class="reason" id="nextTaskReason"></div>
@@ -524,6 +577,8 @@ const nextTaskBox = document.getElementById('nextTaskBox');
 const nextTaskName = document.getElementById('nextTaskName');
 const nextTaskReason = document.getElementById('nextTaskReason');
 let savedOrder = null;
+const dailyGoalBox = document.getElementById('dailyGoalBox');
+const dailyGoalName = document.getElementById('dailyGoalName');
 const dailySummaryOverlay = document.getElementById('dailySummaryOverlay');
 const closeDailySummary = document.getElementById('closeDailySummary');
 let dailySummaryShown = false;
@@ -582,6 +637,17 @@ pinButton.addEventListener('click', async function() {
     });
     loadTasks();
 });
+const goalButton = document.createElement('button');
+goalButton.textContent = task.is_daily_goal ? '⭐' : '☆';
+goalButton.classList.add('goal-btn');
+
+goalButton.addEventListener('click', async function() {
+    await fetch('/tasks/' + task.id + '/set-goal', {
+        method: 'PUT',
+        credentials: 'include'
+    });
+    loadTasks();
+});
 
             analyzeButton.addEventListener('click', async function() {
                 analyzeButton.textContent = '⏳';
@@ -632,6 +698,7 @@ pinButton.addEventListener('click', async function() {
                 loadTasks();
             });
 
+            buttonsDiv.appendChild(goalButton);
             buttonsDiv.appendChild(pinButton);
             buttonsDiv.appendChild(analyzeButton);
             buttonsDiv.appendChild(completeButton);
@@ -683,12 +750,20 @@ if (remainingCount === 0) {
         celebrationShown = true;
     }
 }
+tasks.forEach(function(task) {
+    const li = createTaskElement(task);
+    taskList.appendChild(li);
+});
 
-            tasks.forEach(function(task) {
-                const li = createTaskElement(task);
-                taskList.appendChild(li);
-            });
-            checkDailySummary(tasks);
+const goalTask = tasks.find(function(t) { return t.is_daily_goal && !t.done; });
+if (goalTask) {
+    dailyGoalName.textContent = goalTask.title;
+    dailyGoalBox.classList.remove('hidden');
+} else {
+    dailyGoalBox.classList.add('hidden');
+}
+
+checkDailySummary(tasks);
         }
 
         addButton.addEventListener('click', async function() {

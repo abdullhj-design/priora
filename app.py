@@ -183,6 +183,23 @@ def pin_task(task_id):
     return jsonify({"id": task_id, "pinned": new_status}), 200
  
  
+@app.route('/tasks/<int:task_id>/set-goal', methods=['PUT'])
+def set_daily_goal(task_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+ 
+    conn = get_db_connection()
+    cursor = conn.cursor()
+ 
+    cursor.execute("UPDATE tasks SET is_daily_goal = FALSE WHERE user_id = %s", (session['user_id'],))
+    cursor.execute("UPDATE tasks SET is_daily_goal = TRUE WHERE id = %s", (task_id,))
+    conn.commit()
+ 
+    cursor.close()
+    conn.close()
+    return jsonify({"id": task_id, "is_daily_goal": True}), 200
+ 
+ 
 @app.route('/tasks/<int:task_id>/analyze', methods=['GET'])
 def analyze_task(task_id):
     if 'user_id' not in session:
@@ -200,7 +217,7 @@ def analyze_task(task_id):
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             contents=f"هذي مهمة: \"{task['title']}\". اكتب لي أولاً ملخص قصير جداً لها (سطر واحد)، وبعدها اقترح 3 إلى 5 خطوات عملية لتنفيذها. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي قبله أو بعده: {{\"summary\": \"...\", \"steps\": [\"...\", \"...\"]}}"
         )
  
@@ -239,7 +256,7 @@ def prioritize_tasks():
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             contents=f"هذي قائمة مهام المستخدم اليوم:\n{tasks_list}\n\nرتّبها من الأهم للأقل أهمية، وحدد أي مهمة يبدأ بها أولاً مع سبب قصير. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي: {{\"start_with\": \"...\", \"reason\": \"...\", \"ordered\": [\"...\", \"...\"]}}"
         )
  
@@ -266,7 +283,7 @@ def chat():
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             config={"system_instruction": "أنت مساعد ذكي داخل تطبيق إدارة مهام اسمه Priora. إذا سألك أحد من طوّر هذا التطبيق أو من صممه، أجب بأن المطور هو عبدالله علي الحربي."},
             contents=user_message
         )
