@@ -112,29 +112,32 @@ def get_tasks():
     cursor.close()
     conn.close()
     return jsonify(user_tasks)
- @app.route('/streak', methods=['GET'])
+ 
+ 
+@app.route('/streak', methods=['GET'])
 def get_streak():
     if 'user_id' not in session:
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
-
+ 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
     user = cursor.fetchone()
-
+ 
     cursor.close()
     conn.close()
-
+ 
     today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
     current_streak = user['streak_count']
-
+ 
     if user['last_completed_date'] is not None:
         days_diff = (today - user['last_completed_date']).days
         if days_diff > 1:
             current_streak = 0
-
+ 
     return jsonify({"streak": current_streak}), 200
+ 
  
 @app.route('/tasks', methods=['POST'])
 def add_task():
@@ -175,38 +178,37 @@ def delete_task(task_id):
 def toggle_task(task_id):
     if 'user_id' not in session:
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
-
+ 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("SELECT done FROM tasks WHERE id = %s", (task_id,))
     task = cursor.fetchone()
-
+ 
     new_status = not task['done']
     cursor.execute("UPDATE tasks SET done = %s WHERE id = %s", (new_status, task_id))
     conn.commit()
-
+ 
     cursor.execute("SELECT done FROM tasks WHERE user_id = %s", (session['user_id'],))
     all_tasks = cursor.fetchall()
     all_done = len(all_tasks) > 0 and all(t['done'] for t in all_tasks)
-
+ 
     if all_done:
         cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
         user = cursor.fetchone()
-
+ 
         today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
-        yesterday_str = str(today.toordinal() - 1)
-
+ 
         if user['last_completed_date'] is None or str(user['last_completed_date']) != str(today):
             if user['last_completed_date'] is not None and (today - user['last_completed_date']).days == 1:
                 new_streak = user['streak_count'] + 1
             else:
                 new_streak = 1
-
+ 
             cursor.execute("UPDATE users SET streak_count = %s, last_completed_date = %s WHERE id = %s",
                            (new_streak, today, session['user_id']))
             conn.commit()
-
+ 
     cursor.close()
     conn.close()
     return jsonify({"id": task_id, "done": new_status}), 200
