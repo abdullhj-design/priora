@@ -355,8 +355,7 @@ def chat():
         print(message)
         print("==========================")
 
-        reply = message.content[0].text
-        return jsonify({"reply": reply}), 200
+reply = next((block.text for block in message.content if block.type == 'text'), 'حدث خطأ')   
 
     except Exception as e:
         print("=== خطأ بالشات بوت ===")
