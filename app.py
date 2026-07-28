@@ -265,7 +265,7 @@ def analyze_task(task_id):
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             contents=f"هذي مهمة: \"{task['title']}\". اكتب لي أولاً ملخص قصير جداً لها (سطر واحد)، وبعدها اقترح 3 إلى 5 خطوات عملية لتنفيذها. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي قبله أو بعده: {{\"summary\": \"...\", \"steps\": [\"...\", \"...\"]}}"
         )
  
@@ -304,7 +304,7 @@ def prioritize_tasks():
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             contents=f"هذي قائمة مهام المستخدم اليوم:\n{tasks_list}\n\nرتّبها من الأهم للأقل أهمية، وحدد أي مهمة يبدأ بها أولاً مع سبب قصير. رد فقط بصيغة JSON بهذا الشكل بالضبط، بدون أي كلام إضافي: {{\"start_with\": \"...\", \"reason\": \"...\", \"ordered\": [\"...\", \"...\"]}}"
         )
  
@@ -331,7 +331,7 @@ def chat():
  
     try:
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             config={"system_instruction": "أنت مساعد ذكي داخل تطبيق إدارة مهام اسمه Priora. إذا سألك أحد من طوّر هذا التطبيق أو من صممه، أجب بأن المطور هو عبدالله علي الحربي."},
             contents=user_message
         )
