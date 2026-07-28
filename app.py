@@ -350,9 +350,10 @@ def chat():
                 {"role": "user", "content": user_message}
             ]
         )
-print("=== محتوى رد الشات بوت ===")
-print(message)
-print("==========================")
+
+        print("=== محتوى رد الشات بوت ===")
+        print(message)
+        print("==========================")
 
         reply = message.content[0].text
         return jsonify({"reply": reply}), 200
