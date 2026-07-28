@@ -351,11 +351,8 @@ def chat():
             ]
         )
 
-        print("=== محتوى رد الشات بوت ===")
-        print(message)
-        print("==========================")
-
-reply = next((block.text for block in message.content if block.type == 'text'), 'حدث خطأ')   
+        reply = next((block.text for block in message.content if block.type == 'text'), 'حدث خطأ')
+        return jsonify({"reply": reply}), 200
 
     except Exception as e:
         print("=== خطأ بالشات بوت ===")
