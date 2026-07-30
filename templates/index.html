@@ -793,6 +793,8 @@ checkDailySummary(tasks);
         }
 
         addButton.addEventListener('click', async function() {
+                console.log('🔵 تم استدعاء إضافة مهمة - القيمة: "' + taskInput.value + '"');
+
             const taskText = taskInput.value.trim();
 
             if (taskText !== '') {
