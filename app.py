@@ -437,21 +437,21 @@ def admin_delete_user(user_id):
     return jsonify({"message": "تم حذف المستخدم"}), 200
 
 
-def delete_completed_tasks():
+def delete_all_tasks():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks WHERE done = 1")
+        cursor.execute("DELETE FROM tasks")
         conn.commit()
         cursor.close()
         conn.close()
-        print(f"[{datetime.now()}] تم حذف المهام المكتملة تلقائيًا")
+        print(f"[{datetime.now()}] تم حذف جميع المهام تلقائيًا")
     except Exception as e:
         print(f"[{datetime.now()}] خطأ بحذف المهام: {str(e)}")
 
 
 scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Riyadh'))
-scheduler.add_job(delete_completed_tasks, 'cron', hour=2, minute=0)
+scheduler.add_job(delete_all_tasks, 'cron', hour=14, minute=0)
 scheduler.start()
 
 
