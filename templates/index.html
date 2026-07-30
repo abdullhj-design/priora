@@ -645,10 +645,12 @@ closeCelebration.addEventListener('click', function() {
             buttonsDiv.classList.add('task-buttons');
 
             const analyzeButton = document.createElement('button');
+            analyzeButton.type = 'button';
             analyzeButton.textContent = '🤖حلّل المهمة';
             analyzeButton.classList.add('analyze-btn');
             analyzeButton.title = 'حلّل هذه المهمة';
             const pinButton = document.createElement('button');
+            pinButton.type = 'button';   
 pinButton.textContent = task.pinned ? '📌' : '📍';
 pinButton.classList.add('pin-btn');
 
@@ -660,6 +662,7 @@ pinButton.addEventListener('click', async function() {
     loadTasks();
 });
 const goalButton = document.createElement('button');
+goalButton.type = 'button';  
 goalButton.textContent = task.is_daily_goal ? '⭐' : '☆';
 goalButton.classList.add('goal-btn');
 
@@ -694,10 +697,10 @@ goalButton.addEventListener('click', async function() {
                 }
             });
 
-            const completeButton = document.createElement('button');
-            completeButton.textContent = '✅ تم';
-            completeButton.classList.add('complete-btn');
-
+           const completeButton = document.createElement('button');
+           completeButton.type = 'button';
+        completeButton.textContent = '✅ تم';
+        completeButton.classList.add('complete-btn');
             completeButton.addEventListener('click', async function() {
     await fetch('/tasks/' + task.id + '/toggle', {
         method: 'PUT',
@@ -708,6 +711,7 @@ goalButton.addEventListener('click', async function() {
 });
 
             const deleteButton = document.createElement('button');
+            deleteButton.type = 'button'; 
             deleteButton.textContent = '🗑️';
             deleteButton.classList.add('delete-btn');
 
