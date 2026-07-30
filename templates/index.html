@@ -37,22 +37,24 @@
             align-items: center;
             margin-bottom: 20px;
         }
-.logout-btn {
-    position: fixed !important;
-    top: 20px;
-    right: 20px;
-    width: auto;
-    max-width: 120px;
-    background: none;
-    border: 1px solid white;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'Tajawal', Arial, sans-serif;
-    z-index: 9999;
-}
+
+        .logout-btn {
+            position: fixed !important;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            max-width: 120px;
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Tajawal', Arial, sans-serif;
+            z-index: 9999;
+        }
+
         .card {
             background-color: white;
             border-radius: 16px;
@@ -97,6 +99,11 @@
 
         button:hover {
             background-color: #5e3a85;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .task-counter {
@@ -144,29 +151,41 @@
             flex: 1;
         }
 
-       .task-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
+        .task-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
 
         .analyze-btn {
             background-color: #764ba2;
             padding: 6px 12px;
             font-size: 14px;
         }
-.pin-btn {
-    background-color: #f39c12;
-    padding: 6px 10px;
-    font-size: 14px;
-}
 
-.pin-btn:hover {
-    background-color: #d68910;
-}
         .analyze-btn:hover {
             background-color: #5e3a85;
+        }
+
+        .pin-btn {
+            background-color: #f39c12;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        .pin-btn:hover {
+            background-color: #d68910;
+        }
+
+        .goal-btn {
+            background-color: #f1c40f;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        .goal-btn:hover {
+            background-color: #d4ac0d;
         }
 
         .complete-btn {
@@ -252,17 +271,18 @@
             z-index: 1000;
             animation: pulse-chat 2s infinite;
         }
+
         @keyframes pulse-chat {
-    0% {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0.6);
-    }
-    70% {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(118, 75, 162, 0);
-    }
-    100% {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0);
-    }
-}
+            0% {
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0.6);
+            }
+            70% {
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(118, 75, 162, 0);
+            }
+            100% {
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0);
+            }
+        }
 
         .chat-window {
             position: fixed;
@@ -278,6 +298,7 @@
             z-index: 1000;
             overflow: hidden;
         }
+
         .chat-window.hidden {
             display: none !important;
         }
@@ -343,231 +364,241 @@
             padding: 8px 12px;
             font-size: 13px;
         }
+
         .top-logo {
             width: 100px;
             height: auto;
             margin-bottom: 8px;
         }
+
         .celebration-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-.celebration-overlay.hidden {
-    display: none !important;
-}
-.daily-summary-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
 
-.daily-summary-overlay.hidden {
-    display: none !important;
-}
+        .celebration-overlay.hidden {
+            display: none !important;
+        }
 
-.daily-summary-box {
-    background: linear-gradient(135deg, #1a1a2e 0%, #4a3b6e 100%);
-    border-radius: 20px;
-    padding: 40px 30px;
-    text-align: center;
-    max-width: 340px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .daily-summary-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
 
-.daily-summary-box h2 {
-    color: #fff;
-    font-size: 22px;
-    margin-bottom: 20px;
-}
+        .daily-summary-overlay.hidden {
+            display: none !important;
+        }
 
-.daily-summary-box .summary-line {
-    color: #e0e0e0;
-    font-size: 15px;
-    margin-bottom: 12px;
-    text-align: right;
-}
+        .daily-summary-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #4a3b6e 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 340px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-.daily-summary-box .farewell {
-    color: #ffd700;
-    font-size: 15px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
+        .daily-summary-box h2 {
+            color: #fff;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
 
-.daily-summary-box button {
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 10px 25px;
-}
-.celebration-box {
-    background-color: white;
-    border-radius: 16px;
-    padding: 40px 30px;
-    text-align: center;
-    max-width: 320px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
+        .daily-summary-box .summary-line {
+            color: #e0e0e0;
+            font-size: 15px;
+            margin-bottom: 12px;
+            text-align: right;
+        }
 
-.celebration-box h2 {
-    color: #764ba2;
-    font-size: 22px;
-    margin-bottom: 10px;
-}
+        .daily-summary-box .farewell {
+            color: #ffd700;
+            font-size: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
 
-.celebration-box p {
-    color: #666;
-    font-size: 15px;
-    margin-bottom: 20px;
-}
+        .daily-summary-box button {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+        }
 
-.celebration-box button {
-    background-color: #764ba2;
-    padding: 10px 25px;
-}
-.streak-text {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    text-align: center;
-}
-.daily-goal-box {
-    background-color: #fef9e7;
-    border: 2px solid #f1c40f;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    text-align: center;
-}
+        .celebration-box {
+            background-color: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
-.daily-goal-box .label {
-    font-size: 13px;
-    color: #b7950b;
-    font-weight: 500;
-    margin-bottom: 6px;
-}
+        .celebration-box h2 {
+            color: #764ba2;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
 
-.daily-goal-box .goal-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #333;
-}
+        .celebration-box p {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
 
-.next-task-box {
-    background-color: #fff3e0;
-    border: 2px solid #ff9800;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    text-align: center;
-}
+        .celebration-box button {
+            background-color: #764ba2;
+            padding: 10px 25px;
+        }
 
-.next-task-box .label {
-    font-size: 13px;
-    color: #e65100;
-    font-weight: 500;
-    margin-bottom: 6px;
-}
+        .streak-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
 
-.next-task-box .task-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 6px;
-}
+        .daily-goal-box {
+            background-color: #fef9e7;
+            border: 2px solid #f1c40f;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
 
-.next-task-box .reason {
-    font-size: 12px;
-    color: #888;
-}
+        .daily-goal-box .label {
+            font-size: 13px;
+            color: #b7950b;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .daily-goal-box .goal-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .next-task-box {
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .next-task-box .label {
+            font-size: 13px;
+            color: #e65100;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .next-task-box .task-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .next-task-box .reason {
+            font-size: 12px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+    <button type="button" class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
 
-<div class="top-bar">
-    <img src="/static/images/logo2.png" alt="Priora Logo" class="top-logo">
-    <h1 id="greeting"></h1>
+    <div class="top-bar">
+        <img src="/static/images/logo2.png" alt="Priora Logo" class="top-logo">
+        <h1 id="greeting"></h1>
     </div>
-     <p id="streakDisplay" class="streak-text"></p>
+
+    <p id="streakDisplay" class="streak-text"></p>
+
     <div class="card">
-<div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
-    <div style="text-align: center; margin-bottom: 10px;">
-        <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
-    </div>
-    <div id="prioritizeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
-</div>        <div class="input-group">
+        <div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+            </div>
+            <div id="prioritizeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
+        </div>
+
+        <div class="input-group">
             <input type="text" id="taskInput" placeholder="اكتب مهمة جديدة...">
             <button type="button" id="addBtn">➕ إضافة</button>
         </div>
 
-        <p id="taskCounter" class="task-counter"></p> 
-        <div id="streakBox" class="streak-box hidden">
-    🔥 <span id="streakCount"></span> أيام متتالية
-</div> 
-        <div id="dailyGoalBox" class="daily-goal-box hidden">
-    <div class="label">⭐ هدف اليوم</div>
-    <div id="dailyGoalName" class="goal-name"></div>
-</div>
+        <p id="taskCounter" class="task-counter"></p>
 
-<div id="nextTaskBox" class="next-task-box hidden">
-    <div class="label">🎯 مهمتك التالية</div>
-    <div class="task-name" id="nextTaskName"></div>
-    <div class="reason" id="nextTaskReason"></div>
-</div>
+        <div id="dailyGoalBox" class="daily-goal-box hidden">
+            <div class="label">⭐ هدف اليوم</div>
+            <div id="dailyGoalName" class="goal-name"></div>
+        </div>
+
+        <div id="nextTaskBox" class="next-task-box hidden">
+            <div class="label">🎯 مهمتك التالية</div>
+            <div class="task-name" id="nextTaskName"></div>
+            <div class="reason" id="nextTaskReason"></div>
+        </div>
+
         <ul id="taskList">
         </ul>
         <p id="emptyMsg" class="empty-msg hidden">لا توجد مهام حاليًا 📭</p>
         <div id="loadingMsg">⏳ جاري التحميل...</div>
-<button id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
-
+        <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
     </div>
-<div id="celebrationOverlay" class="celebration-overlay hidden">
-    <div class="celebration-box">
-<h2>أحسنت! 🎉</h2>       
- <p>أنجزت جميع مهامك اليوم.</p>
-        <button id="closeCelebration">حسنًا</button>
-    </div>
-</div>
-<div id="dailySummaryOverlay" class="daily-summary-overlay hidden">
-    <div class="daily-summary-box">
-        <h2>🌙 ملخص يومك ✨</h2>
-        <div class="summary-line" id="summaryDone"></div>
-        <div class="summary-line" id="summaryRemaining"></div>
-        <div class="summary-line" id="summaryPercent"></div>
-        <div class="farewell">أحسنت! نراك غدًا بيوم جديد 👋</div>
-        <button id="closeDailySummary">حسنًا</button>
-    </div>
-</div>
 
-<div id="chatButton" class="chat-button">💬</div>
+    <div id="celebrationOverlay" class="celebration-overlay hidden">
+        <div class="celebration-box">
+            <h2>أحسنت! 🎉</h2>
+            <p>أنجزت جميع مهامك اليوم.</p>
+            <button type="button" id="closeCelebration">حسنًا</button>
+        </div>
+    </div>
 
+    <div id="dailySummaryOverlay" class="daily-summary-overlay hidden">
+        <div class="daily-summary-box">
+            <h2>🌙 ملخص يومك ✨</h2>
+            <div class="summary-line" id="summaryDone"></div>
+            <div class="summary-line" id="summaryRemaining"></div>
+            <div class="summary-line" id="summaryPercent"></div>
+            <div class="farewell">أحسنت! نراك غدًا بيوم جديد 👋</div>
+            <button type="button" id="closeDailySummary">حسنًا</button>
+        </div>
+    </div>
+
+    <div id="chatButton" class="chat-button">💬</div>
 
     <div id="chatWindow" class="chat-window hidden">
         <div class="chat-header">
-            <span> Priora AI🤖</span>
+            <span>Priora AI🤖</span>
             <span id="closeChat" class="close-chat">✕</span>
         </div>
         <div id="chatMessages" class="chat-messages"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
-            <button id="chatSendBtn">إرسال</button>
+            <button type="button" id="chatSendBtn">إرسال</button>
         </div>
     </div>
 
@@ -593,47 +624,50 @@
         const taskCounter = document.getElementById('taskCounter');
         const emptyMsg = document.getElementById('emptyMsg');
         const celebrationOverlay = document.getElementById('celebrationOverlay');
-const closeCelebration = document.getElementById('closeCelebration');
-let celebrationShown = false;
-const nextTaskBox = document.getElementById('nextTaskBox');
-const nextTaskName = document.getElementById('nextTaskName');
-const nextTaskReason = document.getElementById('nextTaskReason');
-let savedOrder = null;
-const dailyGoalBox = document.getElementById('dailyGoalBox');
-const dailyGoalName = document.getElementById('dailyGoalName');
-const dailySummaryOverlay = document.getElementById('dailySummaryOverlay');
-const closeDailySummary = document.getElementById('closeDailySummary');
-let dailySummaryShown = false;
+        const closeCelebration = document.getElementById('closeCelebration');
+        let celebrationShown = false;
+        const nextTaskBox = document.getElementById('nextTaskBox');
+        const nextTaskName = document.getElementById('nextTaskName');
+        const nextTaskReason = document.getElementById('nextTaskReason');
+        let savedOrder = null;
+        const dailyGoalBox = document.getElementById('dailyGoalBox');
+        const dailyGoalName = document.getElementById('dailyGoalName');
+        const dailySummaryOverlay = document.getElementById('dailySummaryOverlay');
+        const closeDailySummary = document.getElementById('closeDailySummary');
+        let dailySummaryShown = false;
+        const prioritizeBtn = document.getElementById('prioritizeBtn');
+        const prioritizeResult = document.getElementById('prioritizeResult');
+        const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
 
-closeDailySummary.addEventListener('click', function() {
-    dailySummaryOverlay.classList.add('hidden');
-});
+        let isProcessing = false;
 
-function checkDailySummary(tasks) {
-    const now = new Date();
-    const currentHour = now.getHours();
+        closeDailySummary.addEventListener('click', function() {
+            dailySummaryOverlay.classList.add('hidden');
+        });
 
-    if (currentHour >= 21 && !dailySummaryShown) {
-        const doneCount = tasks.filter(function(t) { return t.done; }).length;
-        const remainingCount = tasks.length - doneCount;
-        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+        closeCelebration.addEventListener('click', function() {
+            celebrationOverlay.classList.add('hidden');
+        });
 
-        document.getElementById('summaryDone').textContent = '✅ أنجزت ' + doneCount + ' مهام';
-        document.getElementById('summaryRemaining').textContent = '⏳ تبقى ' + remainingCount + ' مهام';
-        document.getElementById('summaryPercent').textContent = '🎯 نسبة الإنجاز ' + percent + '%';
+        function checkDailySummary(tasks) {
+            const now = new Date();
+            const currentHour = now.getHours();
 
-        dailySummaryOverlay.classList.remove('hidden');
-        dailySummaryShown = true;
-    }
-}
+            if (currentHour >= 21 && !dailySummaryShown) {
+                const doneCount = tasks.filter(function(t) { return t.done; }).length;
+                const remainingCount = tasks.length - doneCount;
+                const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
 
-closeCelebration.addEventListener('click', function() {
-    celebrationOverlay.classList.add('hidden');
-});
+                document.getElementById('summaryDone').textContent = '✅ أنجزت ' + doneCount + ' مهام';
+                document.getElementById('summaryRemaining').textContent = '⏳ تبقى ' + remainingCount + ' مهام';
+                document.getElementById('summaryPercent').textContent = '🎯 نسبة الإنجاز ' + percent + '%';
+
+                dailySummaryOverlay.classList.remove('hidden');
+                dailySummaryShown = true;
+            }
+        }
 
         function createTaskElement(task) {
-                console.log('🟢 إنشاء عنصر مهمة: ' + task.title);
-
             const li = document.createElement('li');
             if (task.done) {
                 li.classList.add('completed');
@@ -646,44 +680,40 @@ closeCelebration.addEventListener('click', function() {
             const buttonsDiv = document.createElement('div');
             buttonsDiv.classList.add('task-buttons');
 
+            const goalButton = document.createElement('button');
+            goalButton.type = 'button';
+            goalButton.textContent = task.is_daily_goal ? '⭐' : '☆';
+            goalButton.classList.add('goal-btn');
+            goalButton.addEventListener('click', async function() {
+                if (isProcessing) return;
+                isProcessing = true;
+                goalButton.disabled = true;
+                try {
+                    await fetch('/tasks/' + task.id + '/set-goal', {
+                        method: 'PUT',
+                        credentials: 'include'
+                    });
+                    await loadTasks();
+                } finally {
+                    isProcessing = false;
+                }
+            });
+
             const analyzeButton = document.createElement('button');
             analyzeButton.type = 'button';
-            analyzeButton.textContent = '🤖حلّل المهمة';
+            analyzeButton.textContent = '🤖 كيف أبدأ؟';
             analyzeButton.classList.add('analyze-btn');
             analyzeButton.title = 'حلّل هذه المهمة';
-            const pinButton = document.createElement('button');
-            pinButton.type = 'button';   
-pinButton.textContent = task.pinned ? '📌' : '📍';
-pinButton.classList.add('pin-btn');
-
-pinButton.addEventListener('click', async function() {
-    await fetch('/tasks/' + task.id + '/pin', {
-        method: 'PUT',
-        credentials: 'include'
-    });
-    loadTasks();
-});
-const goalButton = document.createElement('button');
-goalButton.type = 'button';  
-goalButton.textContent = task.is_daily_goal ? '⭐' : '☆';
-goalButton.classList.add('goal-btn');
-
-goalButton.addEventListener('click', async function() {
-    await fetch('/tasks/' + task.id + '/set-goal', {
-        method: 'PUT',
-        credentials: 'include'
-    });
-    loadTasks();
-});
-
             analyzeButton.addEventListener('click', async function() {
+                analyzeButton.disabled = true;
                 analyzeButton.textContent = '⏳';
                 try {
                     const response = await fetch('/tasks/' + task.id + '/analyze', {
                         credentials: 'include'
                     });
                     const data = await response.json();
-                    analyzeButton.textContent = '🤖';
+                    analyzeButton.textContent = '🤖 كيف أبدأ؟';
+                    analyzeButton.disabled = false;
 
                     if (data.summary && data.steps) {
                         let stepsText = data.steps.map(function(step, index) {
@@ -694,43 +724,53 @@ goalButton.addEventListener('click', async function() {
                         alert('حدث خطأ: ' + (data.error || 'غير معروف'));
                     }
                 } catch (err) {
-                    analyzeButton.textContent = '🤖';
+                    analyzeButton.textContent = '🤖 كيف أبدأ؟';
+                    analyzeButton.disabled = false;
                     alert('تعذر الاتصال بخدمة الذكاء الاصطناعي');
                 }
             });
 
-           const completeButton = document.createElement('button');
-           completeButton.type = 'button';
-        completeButton.textContent = '✅ تم';
-        completeButton.classList.add('complete-btn');
-           completeButton.addEventListener('click', async function() {
-    completeButton.disabled = true;
-        console.log('🟣 استدعاء toggle للمهمة: ' + task.id + ' في الوقت: ' + new Date().toISOString());
-
-    await fetch('/tasks/' + task.id + '/toggle', {
-        method: 'PUT',
-        credentials: 'include'
-    });
-    await loadTasks();
-    showNextTask();
-});
+            const completeButton = document.createElement('button');
+            completeButton.type = 'button';
+            completeButton.textContent = '✅ تم';
+            completeButton.classList.add('complete-btn');
+            completeButton.addEventListener('click', async function() {
+                if (isProcessing) return;
+                isProcessing = true;
+                completeButton.disabled = true;
+                try {
+                    await fetch('/tasks/' + task.id + '/toggle', {
+                        method: 'PUT',
+                        credentials: 'include'
+                    });
+                    await loadTasks();
+                    showNextTask();
+                } finally {
+                    isProcessing = false;
+                }
+            });
 
             const deleteButton = document.createElement('button');
-            deleteButton.type = 'button'; 
+            deleteButton.type = 'button';
             deleteButton.textContent = '🗑️';
             deleteButton.classList.add('delete-btn');
-
             deleteButton.addEventListener('click', async function() {
                 if (!confirm('متأكد تبي تحذف هذي المهمة؟')) return;
-                await fetch('/tasks/' + task.id, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-                loadTasks();
+                if (isProcessing) return;
+                isProcessing = true;
+                deleteButton.disabled = true;
+                try {
+                    await fetch('/tasks/' + task.id, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+                    await loadTasks();
+                } finally {
+                    isProcessing = false;
+                }
             });
 
             buttonsDiv.appendChild(goalButton);
-            //buttonsDiv.appendChild(pinButton);
             buttonsDiv.appendChild(analyzeButton);
             buttonsDiv.appendChild(completeButton);
             buttonsDiv.appendChild(deleteButton);
@@ -757,71 +797,81 @@ goalButton.addEventListener('click', async function() {
             const tasks = await response.json();
 
             loadingMsg.style.display = 'none';
+            taskList.innerHTML = '';
 
             if (tasks.length === 0) {
-    taskCounter.textContent = '';
-    emptyMsg.classList.remove('hidden');
-    celebrationShown = false;
-} else {
-    const doneCount = tasks.filter(function(t) { return t.done; }).length;
-    const remainingCount = tasks.length - doneCount;
+                taskCounter.textContent = '';
+                emptyMsg.classList.remove('hidden');
+                celebrationShown = false;
+            } else {
+                const doneCount = tasks.filter(function(t) { return t.done; }).length;
+                const remainingCount = tasks.length - doneCount;
 
-if (remainingCount === 0) {
-    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
-} else if (remainingCount === 1) {
-    taskCounter.textContent = '🔥 الأخيرة! أنجزها وتكون أكملت جميع مهام اليوم.';
-} else if (remainingCount <= 3) {
-    taskCounter.textContent = '🏁 باقي القليل! تبقى لك ' + remainingCount + ' مهام فقط لإنهاء يومك.';
-} else {
-    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
-}    emptyMsg.classList.add('hidden');
+                if (remainingCount === 0) {
+                    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
+                } else if (remainingCount === 1) {
+                    taskCounter.textContent = '🔥 الأخيرة! أنجزها وتكون أكملت جميع مهام اليوم.';
+                } else if (remainingCount <= 3) {
+                    taskCounter.textContent = '🏁 باقي القليل! تبقى لك ' + remainingCount + ' مهام فقط لإنهاء يومك.';
+                } else {
+                    taskCounter.textContent = 'لديك ' + tasks.length + ' مهام (' + doneCount + ' مكتملة)';
+                }
+                emptyMsg.classList.add('hidden');
 
-    if (doneCount === tasks.length && !celebrationShown) {
-        celebrationOverlay.classList.remove('hidden');
-        celebrationShown = true;
-    }
-}
-tasks.forEach(function(task) {
-    const li = createTaskElement(task);
-    taskList.appendChild(li);
-});
+                if (doneCount === tasks.length && !celebrationShown) {
+                    celebrationOverlay.classList.remove('hidden');
+                    celebrationShown = true;
+                }
+            }
 
-const goalTask = tasks.find(function(t) { return t.is_daily_goal && !t.done; });
-if (goalTask) {
-    dailyGoalName.textContent = goalTask.title;
-    dailyGoalBox.classList.remove('hidden');
-} else {
-    dailyGoalBox.classList.add('hidden');
-}
+            tasks.forEach(function(task) {
+                const li = createTaskElement(task);
+                taskList.appendChild(li);
+            });
 
-checkDailySummary(tasks);
+            const goalTask = tasks.find(function(t) { return t.is_daily_goal && !t.done; });
+            if (goalTask) {
+                dailyGoalName.textContent = goalTask.title;
+                dailyGoalBox.classList.remove('hidden');
+            } else {
+                dailyGoalBox.classList.add('hidden');
+            }
+
+            checkDailySummary(tasks);
         }
 
         addButton.addEventListener('click', async function() {
-                console.log('🔵 تم استدعاء إضافة مهمة - القيمة: "' + taskInput.value + '"');
-
+            if (isProcessing) return;
             const taskText = taskInput.value.trim();
 
             if (taskText !== '') {
-                const response = await fetch('/tasks', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ title: taskText })
-                });
+                isProcessing = true;
+                addButton.disabled = true;
+                try {
+                    const response = await fetch('/tasks', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ title: taskText })
+                    });
 
-                if (response.status === 401) {
-                    window.location.href = '/login-page';
-                    return;
+                    if (response.status === 401) {
+                        window.location.href = '/login-page';
+                        return;
+                    }
+
+                    taskInput.value = '';
+                    await loadTasks();
+                } finally {
+                    isProcessing = false;
+                    addButton.disabled = false;
                 }
-
-                taskInput.value = '';
-                loadTasks();
             }
         });
 
         taskInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
+                event.preventDefault();
                 addButton.click();
             }
         });
@@ -841,21 +891,20 @@ checkDailySummary(tasks);
         const chatInput = document.getElementById('chatInput');
         const chatSendBtn = document.getElementById('chatSendBtn');
 
-       
-
         let chatOpened = false;
 
-chatButton.addEventListener('click', function() {
-    chatWindow.classList.toggle('hidden');
+        chatButton.addEventListener('click', function() {
+            chatWindow.classList.toggle('hidden');
 
-    if (!chatOpened && !chatWindow.classList.contains('hidden')) {
-        addChatMessage('👋 مرحبًا ' + username + '، أنا Priora AI\nكيف يمكنني مساعدتك؟', 'bot');
-        chatOpened = true;
-    }
-});
-closeChat.addEventListener('click', function() {
-    chatWindow.classList.add('hidden');
-});
+            if (!chatOpened && !chatWindow.classList.contains('hidden')) {
+                addChatMessage('👋 مرحبًا ' + username + '، أنا Priora AI\nكيف يمكنني مساعدتك؟', 'bot');
+                chatOpened = true;
+            }
+        });
+
+        closeChat.addEventListener('click', function() {
+            chatWindow.classList.add('hidden');
+        });
 
         function addChatMessage(text, sender) {
             const msgDiv = document.createElement('div');
@@ -865,26 +914,26 @@ closeChat.addEventListener('click', function() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-       async function sendChatMessage() {
-    const text = chatInput.value.trim();
-    if (text === '') return;
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text === '') return;
 
-    addChatMessage(text, 'user');
-    chatInput.value = '';
+            addChatMessage(text, 'user');
+            chatInput.value = '';
 
-    const typingMsg = document.createElement('div');
-    typingMsg.classList.add('chat-msg', 'bot');
-    typingMsg.textContent = '⏳ Priora يرد عليك الآن...';
-    typingMsg.id = 'typingIndicator';
-    chatMessages.appendChild(typingMsg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+            const typingMsg = document.createElement('div');
+            typingMsg.classList.add('chat-msg', 'bot');
+            typingMsg.textContent = '⏳ Priora يرد عليك الآن...';
+            typingMsg.id = 'typingIndicator';
+            chatMessages.appendChild(typingMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    const response = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ message: text })
-    });
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ message: text })
+            });
 
             const data = await response.json();
             document.getElementById('typingIndicator').remove();
@@ -899,123 +948,115 @@ closeChat.addEventListener('click', function() {
 
         chatInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
+                event.preventDefault();
                 sendChatMessage();
             }
         });
 
-const prioritizeBtn = document.getElementById('prioritizeBtn');
-const prioritizeResult = document.getElementById('prioritizeResult');
-const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
+        prioritizeBtn.addEventListener('click', async function() {
+            prioritizeBtn.textContent = '⏳ جاري الترتيب...';
+            prioritizeResult.style.display = 'none';
+            prioritizeResultWrapper.style.display = 'none';
 
-prioritizeBtn.addEventListener('click', async function() {
-    prioritizeBtn.textContent = '⏳ جاري الترتيب...';
-    prioritizeResult.style.display = 'none';
-    prioritizeResultWrapper.style.display = 'none';
+            try {
+                const response = await fetch('/tasks/prioritize', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
 
-    try {
-        const response = await fetch('/tasks/prioritize', {
-            credentials: 'include'
+                prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
+                if (data.message) {
+                    prioritizeResult.innerHTML = data.message;
+                    prioritizeResult.style.display = 'block';
+                    prioritizeResultWrapper.style.display = 'block';
+                    return;
+                }
+
+                if (data.start_with) {
+                    savedOrder = data.ordered;
+
+                    let orderedList = data.ordered.map(function(t, i) {
+                        return (i + 1) + '. ' + t;
+                    }).join('<br>');
+
+                    prioritizeResult.innerHTML =
+                        '<strong>🎯 ابدأ بـ: ' + data.start_with + '</strong><br>' +
+                        '<span style="color:#888;">' + data.reason + '</span><br><br>' +
+                        '<strong>خطتك لليوم:</strong><br>' + orderedList;
+                    prioritizeResult.style.display = 'block';
+                    prioritizeResultWrapper.style.display = 'block';
+                } else {
+                    prioritizeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
+                    prioritizeResult.style.display = 'block';
+                    prioritizeResultWrapper.style.display = 'block';
+                }
+            } catch (err) {
+                prioritizeBtn.textContent = '🤖 رتّب يومي';
+                prioritizeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
+                prioritizeResult.style.display = 'block';
+                prioritizeResultWrapper.style.display = 'block';
+            }
         });
-        const data = await response.json();
 
-        prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
-        if (data.message) {
-            prioritizeResult.innerHTML = data.message;
-            prioritizeResult.style.display = 'block';
-            prioritizeResultWrapper.style.display = 'block';
-            return;
+        function showNextTask() {
+            if (!savedOrder) {
+                nextTaskBox.classList.add('hidden');
+                return;
+            }
+
+            const doneTitles = Array.from(document.querySelectorAll('#taskList li.completed .task-text'))
+                .map(function(el) { return el.textContent; });
+
+            const next = savedOrder.find(function(title) {
+                return doneTitles.indexOf(title) === -1;
+            });
+
+            if (next) {
+                nextTaskName.textContent = next;
+                nextTaskBox.classList.remove('hidden');
+            } else {
+                nextTaskBox.classList.add('hidden');
+            }
         }
 
-        if (data.start_with) {
-            savedOrder = data.ordered;
+        const streakMessages = [
+            'ابدأ سلسلتك اليوم 🔥',
+            'أول يوم! بداية موفقة 👏',
+            'يومان متتاليان! استمر 🔥',
+            '3 أيام! بدأت تبني عادة جميلة',
+            '4 أيام! حافظ على استمراريتك',
+            '5 أيام! تقدم رائع 👏',
+            '6 أيام! بقي يوم واحد على أسبوع كامل',
+            '7 أيام! أكملت أسبوعًا كاملًا 🎉',
+            '8 أيام! بداية أسبوع جديد، استمر',
+            '9 أيام! استمراريتك تصنع الفرق',
+            '10 أيام! وصلت للرقمين 🔥',
+            '11 يومًا! سلسلة تستحق الحفاظ عليها',
+            '12 يومًا! اقتربت من أسبوعين',
+            '13 يومًا! يومان فقط على أسبوعين',
+            '14 يومًا! أسبوعان كاملان 🎉',
+            '15 يومًا! 15 يومًا من الاستمرارية 👑'
+        ];
 
-            let orderedList = data.ordered.map(function(t, i) {
-                return (i + 1) + '. ' + t;
-            }).join('<br>');
+        async function loadStreak() {
+            const response = await fetch('/streak', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const streak = data.streak;
 
-            prioritizeResult.innerHTML =
-                '<strong>🎯 ابدأ بـ: ' + data.start_with + '</strong><br>' +
-                '<span style="color:#888;">' + data.reason + '</span><br><br>' +
-                '<strong>خطتك لليوم:</strong><br>' + orderedList;
-            prioritizeResult.style.display = 'block';
-            prioritizeResultWrapper.style.display = 'block';
-        } else {
-            prioritizeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
-            prioritizeResult.style.display = 'block';
-            prioritizeResultWrapper.style.display = 'block';
+            let message;
+            if (streak < streakMessages.length) {
+                message = streakMessages[streak];
+            } else {
+                message = streak + ' يومًا من الاستمرارية! أنت أسطورة 👑';
+            }
+
+            document.getElementById('streakDisplay').textContent = '🔥 ' + message;
         }
-    } catch (err) {
-        prioritizeBtn.textContent = '🤖 رتّب يومي';
-        prioritizeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
-        prioritizeResult.style.display = 'block';
-        prioritizeResultWrapper.style.display = 'block';
-    }
-});
-function showNextTask() {
-    if (!savedOrder) {
-        nextTaskBox.classList.add('hidden');
-        return;
-    }
 
-    const doneTitles = Array.from(document.querySelectorAll('#taskList li.completed .task-text'))
-        .map(function(el) { return el.textContent; });
-
-    const next = savedOrder.find(function(title) {
-        return doneTitles.indexOf(title) === -1;
-    });
-
-    if (next) {
-        nextTaskName.textContent = next;
-        nextTaskBox.classList.remove('hidden');
-    } else {
-        nextTaskBox.classList.add('hidden');
-    }
-}
-
-const streakMessages = [
-    'ابدأ سلسلتك اليوم 🔥',
-    'أول يوم! بداية موفقة 👏',
-    'يومان متتاليان! استمر 🔥',
-    '3 أيام! بدأت تبني عادة جميلة',
-    '4 أيام! حافظ على استمراريتك',
-    '5 أيام! تقدم رائع 👏',
-    '6 أيام! بقي يوم واحد على أسبوع كامل',
-    '7 أيام! أكملت أسبوعًا كاملًا 🎉',
-    '8 أيام! بداية أسبوع جديد، استمر',
-    '9 أيام! استمراريتك تصنع الفرق',
-    '10 أيام! وصلت للرقمين 🔥',
-    '11 يومًا! سلسلة تستحق الحفاظ عليها',
-    '12 يومًا! اقتربت من أسبوعين',
-    '13 يومًا! يومان فقط على أسبوعين',
-    '14 يومًا! أسبوعان كاملان 🎉',
-    '15 يومًا! 15 يومًا من الاستمرارية 👑'
-];
-
-async function loadStreak() {
-    const response = await fetch('/streak', {
-        credentials: 'include'
-    });
-    const data = await response.json();
-    const streak = data.streak;
-
-    let message;
-    if (streak < streakMessages.length) {
-        message = streakMessages[streak];
-    } else {
-        message = streak + ' يومًا من الاستمرارية! أنت أسطورة 👑';
-    }
-
-    document.getElementById('streakDisplay').textContent = '🔥 ' + message;
-}
-
-loadStreak();
-loadTasks(); 
-window.addEventListener('scroll', function() {
-    const btn = document.getElementById('logoutBtn');
-    btn.style.position = 'fixed';
-    btn.style.top = '20px';
-    btn.style.right = '20px';
-});   
-</script>
+        loadStreak();
+        loadTasks();
+    </script>
 </body>
 </html>
