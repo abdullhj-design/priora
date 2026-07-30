@@ -266,7 +266,7 @@ def analyze_task(task_id):
     try:
         message = client.messages.create(
             model="claude-sonnet-5",
-            max_tokens=300,
+            max_tokens=1000,
             messages=[
                 {
                     "role": "user",
