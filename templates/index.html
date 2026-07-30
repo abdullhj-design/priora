@@ -507,8 +507,12 @@
     </div>
      <p id="streakDisplay" class="streak-text"></p>
     <div class="card">
-<div id="prioritizeResult" style="display: none; background-color: #f7f6fb; border-radius: 8px; padding: 15px; margin-bottom: 30px; font-size: 14px; line-height: 1.6;"></div>
-        <div class="input-group">
+<div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
+    <div style="text-align: center; margin-bottom: 10px;">
+        <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+    </div>
+    <div id="prioritizeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
+</div>        <div class="input-group">
             <input type="text" id="taskInput" placeholder="اكتب مهمة جديدة...">
             <button id="addBtn">➕ إضافة</button>
         </div>
@@ -730,7 +734,7 @@ goalButton.addEventListener('click', async function() {
         async function loadTasks() {
             loadingMsg.style.display = 'block';
             prioritizeResult.style.display = 'none';
-            taskList.innerHTML = '';
+            prioritizeResultWrapper.style.display = 'none';
 
             const response = await fetch('/tasks', {
                 credentials: 'include'
@@ -859,7 +863,7 @@ closeChat.addEventListener('click', function() {
 
     const typingMsg = document.createElement('div');
     typingMsg.classList.add('chat-msg', 'bot');
-    typingMsg.textContent = '⏳ Priora AI يرد عليك الآن...';
+    typingMsg.textContent = '⏳ Priora يرد عليك الآن...';
     typingMsg.id = 'typingIndicator';
     chatMessages.appendChild(typingMsg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -890,10 +894,12 @@ closeChat.addEventListener('click', function() {
 
 const prioritizeBtn = document.getElementById('prioritizeBtn');
 const prioritizeResult = document.getElementById('prioritizeResult');
+const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
 
 prioritizeBtn.addEventListener('click', async function() {
     prioritizeBtn.textContent = '⏳ جاري الترتيب...';
     prioritizeResult.style.display = 'none';
+    prioritizeResultWrapper.style.display = 'none';
 
     try {
         const response = await fetch('/tasks/prioritize', {
@@ -901,15 +907,16 @@ prioritizeBtn.addEventListener('click', async function() {
         });
         const data = await response.json();
 
-prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
+        prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
         if (data.message) {
             prioritizeResult.innerHTML = data.message;
             prioritizeResult.style.display = 'block';
+            prioritizeResultWrapper.style.display = 'block';
             return;
         }
 
         if (data.start_with) {
-                savedOrder = data.ordered;
+            savedOrder = data.ordered;
 
             let orderedList = data.ordered.map(function(t, i) {
                 return (i + 1) + '. ' + t;
@@ -920,14 +927,17 @@ prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
                 '<span style="color:#888;">' + data.reason + '</span><br><br>' +
                 '<strong>خطتك لليوم:</strong><br>' + orderedList;
             prioritizeResult.style.display = 'block';
+            prioritizeResultWrapper.style.display = 'block';
         } else {
             prioritizeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
             prioritizeResult.style.display = 'block';
+            prioritizeResultWrapper.style.display = 'block';
         }
     } catch (err) {
         prioritizeBtn.textContent = '🤖 رتّب يومي';
         prioritizeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
         prioritizeResult.style.display = 'block';
+        prioritizeResultWrapper.style.display = 'block';
     }
 });
 function showNextTask() {
