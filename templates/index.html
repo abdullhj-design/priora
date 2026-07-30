@@ -705,6 +705,8 @@ goalButton.addEventListener('click', async function() {
         completeButton.classList.add('complete-btn');
            completeButton.addEventListener('click', async function() {
     completeButton.disabled = true;
+        console.log('🟣 استدعاء toggle للمهمة: ' + task.id + ' في الوقت: ' + new Date().toISOString());
+
     await fetch('/tasks/' + task.id + '/toggle', {
         method: 'PUT',
         credentials: 'include'
