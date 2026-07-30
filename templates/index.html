@@ -537,6 +537,12 @@
     <p id="streakDisplay" class="streak-text"></p>
 
     <div class="card">
+        <div id="analyzeResultWrapper" style="display: none; margin-bottom: 15px;">
+    <div style="text-align: center; margin-bottom: 10px;">
+        <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+    </div>
+    <div id="analyzeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
+</div>
         <div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
             <div style="text-align: center; margin-bottom: 10px;">
                 <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
@@ -638,6 +644,8 @@
         const prioritizeBtn = document.getElementById('prioritizeBtn');
         const prioritizeResult = document.getElementById('prioritizeResult');
         const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
+        const analyzeResult = document.getElementById('analyzeResult');
+        const analyzeResultWrapper = document.getElementById('analyzeResultWrapper');
 
         let isProcessing = false;
 
@@ -701,34 +709,39 @@
 
             const analyzeButton = document.createElement('button');
             analyzeButton.type = 'button';
-            analyzeButton.textContent = '🤖 كيف أبدأ؟';
+            analyzeButton.textContent = '🤖حلل المهمة ';
             analyzeButton.classList.add('analyze-btn');
             analyzeButton.title = 'حلّل هذه المهمة';
             analyzeButton.addEventListener('click', async function() {
-                analyzeButton.disabled = true;
-                analyzeButton.textContent = '⏳';
-                try {
-                    const response = await fetch('/tasks/' + task.id + '/analyze', {
-                        credentials: 'include'
-                    });
-                    const data = await response.json();
-                    analyzeButton.textContent = '🤖 كيف أبدأ؟';
-                    analyzeButton.disabled = false;
+    analyzeButton.disabled = true;
+    analyzeButton.textContent = '⏳';
+    try {
+        const response = await fetch('/tasks/' + task.id + '/analyze', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        analyzeButton.textContent = '🤖 حلل المهمة';
+        analyzeButton.disabled = false;
 
-                    if (data.summary && data.steps) {
-                        let stepsText = data.steps.map(function(step, index) {
-                            return (index + 1) + '. ' + step;
-                        }).join('\n');
-                        alert('📋 الملخص:\n' + data.summary + '\n\n✅ الخطوات المقترحة:\n' + stepsText);
-                    } else {
-                        alert('حدث خطأ: ' + (data.error || 'غير معروف'));
-                    }
-                } catch (err) {
-                    analyzeButton.textContent = '🤖 كيف أبدأ؟';
-                    analyzeButton.disabled = false;
-                    alert('تعذر الاتصال بخدمة الذكاء الاصطناعي');
-                }
-            });
+        if (data.summary && data.steps) {
+            let stepsText = data.steps.map(function(step, index) {
+                return (index + 1) + '. ' + step;
+            }).join('<br>');
+            analyzeResult.innerHTML =
+                '<strong>📋 الملخص:</strong><br>' + data.summary +
+                '<br><br><strong>✅ الخطوات المقترحة:</strong><br>' + stepsText;
+            analyzeResultWrapper.style.display = 'block';
+        } else {
+            analyzeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
+            analyzeResultWrapper.style.display = 'block';
+        }
+    } catch (err) {
+        analyzeButton.textContent = '🤖 حلل المهمة';
+        analyzeButton.disabled = false;
+        analyzeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
+        analyzeResultWrapper.style.display = 'block';
+    }
+});
 
             const completeButton = document.createElement('button');
             completeButton.type = 'button';
@@ -784,6 +797,7 @@
             loadingMsg.style.display = 'block';
             prioritizeResult.style.display = 'none';
             prioritizeResultWrapper.style.display = 'none';
+                analyzeResultWrapper.style.display = 'none';
 
             const response = await fetch('/tasks', {
                 credentials: 'include'
