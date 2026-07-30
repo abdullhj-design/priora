@@ -451,7 +451,7 @@ def delete_all_tasks():
 
 
 scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Riyadh'))
-scheduler.add_job(delete_all_tasks, 'cron', hour=14, minute=0)
+scheduler.add_job(delete_all_tasks, 'cron', hour=0, minute=0)
 scheduler.start()
 
 
