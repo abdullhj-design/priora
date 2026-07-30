@@ -276,6 +276,7 @@ def analyze_task(task_id):
         )
 
         raw_text = next((block.text for block in message.content if block.type == 'text'), '{}').strip()
+
         if raw_text.startswith("```"):
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 
@@ -319,7 +320,8 @@ def prioritize_tasks():
             ]
         )
 
-        raw_text = next((block.text for block in message.content if block.type == 'text'), '{}').strip()        if raw_text.startswith("```"):
+        raw_text = next((block.text for block in message.content if block.type == 'text'), '{}').strip()
+        if raw_text.startswith("```"):
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 
         parsed = json.loads(raw_text)
