@@ -538,13 +538,7 @@
 
     <div class="card">
        
-        <div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
-            <div style="text-align: center; margin-bottom: 10px;">
-                <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
-            </div>
-            <div id="prioritizeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
-        </div>
-
+        
         <div class="input-group">
             <input type="text" id="taskInput" placeholder="اكتب مهمة جديدة...">
             <button type="button" id="addBtn">➕ إضافة</button>
@@ -569,6 +563,15 @@
         <div id="loadingMsg">⏳ جاري التحميل...</div>
         <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
     </div>
+    <div id="prioritizeOverlay" class="celebration-overlay hidden">
+    <div class="celebration-box">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+        </div>
+        <div id="prioritizeOverlayContent" style="text-align: right; font-size: 14px; line-height: 1.6; margin-bottom: 20px;"></div>
+        <button type="button" id="closePrioritizeOverlay">حسنًا</button>
+    </div>
+</div>
     <div id="deleteConfirmOverlay" class="celebration-overlay hidden">
     <div class="celebration-box">
         <div style="text-align: center; margin-bottom: 15px;">
@@ -659,8 +662,13 @@
         const closeDailySummary = document.getElementById('closeDailySummary');
         let dailySummaryShown = false;
         const prioritizeBtn = document.getElementById('prioritizeBtn');
-        const prioritizeResult = document.getElementById('prioritizeResult');
-        const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
+        const prioritizeOverlay = document.getElementById('prioritizeOverlay');
+        const prioritizeOverlayContent = document.getElementById('prioritizeOverlayContent');
+        const closePrioritizeOverlay = document.getElementById('closePrioritizeOverlay');
+
+        closePrioritizeOverlay.addEventListener('click', function() {
+        prioritizeOverlay.classList.add('hidden');
+        });
         const analyzeOverlay = document.getElementById('analyzeOverlay');
         const analyzeOverlayContent = document.getElementById('analyzeOverlayContent');
         const closeAnalyzeOverlay = document.getElementById('closeAnalyzeOverlay');
@@ -832,8 +840,7 @@ confirmDeleteBtn.addEventListener('click', async function() {
 
         async function loadTasks() {
             loadingMsg.style.display = 'block';
-            prioritizeResult.style.display = 'none';
-            prioritizeResultWrapper.style.display = 'none';
+        
 
             const response = await fetch('/tasks', {
                 credentials: 'include'
@@ -1004,49 +1011,43 @@ confirmDeleteBtn.addEventListener('click', async function() {
         });
 
         prioritizeBtn.addEventListener('click', async function() {
-            prioritizeBtn.textContent = '⏳ جاري الترتيب...';
-            prioritizeResult.style.display = 'none';
-            prioritizeResultWrapper.style.display = 'none';
+          prioritizeBtn.textContent = '⏳ جاري الترتيب...';
 
-            try {
-                const response = await fetch('/tasks/prioritize', {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-
-                prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
-                if (data.message) {
-                    prioritizeResult.innerHTML = data.message;
-                    prioritizeResult.style.display = 'block';
-                    prioritizeResultWrapper.style.display = 'block';
-                    return;
-                }
-
-                if (data.start_with) {
-                    savedOrder = data.ordered;
-
-                    let orderedList = data.ordered.map(function(t, i) {
-                        return (i + 1) + '. ' + t;
-                    }).join('<br>');
-
-                    prioritizeResult.innerHTML =
-                        '<strong>🎯 ابدأ بـ: ' + data.start_with + '</strong><br>' +
-                        '<span style="color:#888;">' + data.reason + '</span><br><br>' +
-                        '<strong>خطتك لليوم:</strong><br>' + orderedList;
-                    prioritizeResult.style.display = 'block';
-                    prioritizeResultWrapper.style.display = 'block';
-                } else {
-                    prioritizeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
-                    prioritizeResult.style.display = 'block';
-                    prioritizeResultWrapper.style.display = 'block';
-                }
-            } catch (err) {
-                prioritizeBtn.textContent = '🤖 رتّب يومي';
-                prioritizeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
-                prioritizeResult.style.display = 'block';
-                prioritizeResultWrapper.style.display = 'block';
-            }
+         try {
+        const response = await fetch('/tasks/prioritize', {
+            credentials: 'include'
         });
+        const data = await response.json();
+
+        prioritizeBtn.textContent = '🔄 أعد ترتيب يومي';
+        if (data.message) {
+            prioritizeOverlayContent.innerHTML = data.message;
+            prioritizeOverlay.classList.remove('hidden');
+            return;
+        }
+
+        if (data.start_with) {
+            savedOrder = data.ordered;
+
+            let orderedList = data.ordered.map(function(t, i) {
+                return (i + 1) + '. ' + t;
+            }).join('<br>');
+
+            prioritizeOverlayContent.innerHTML =
+                '<strong>🎯 ابدأ بـ: ' + data.start_with + '</strong><br>' +
+                '<span style="color:#888;">' + data.reason + '</span><br><br>' +
+                '<strong>خطتك لليوم:</strong><br>' + orderedList;
+            prioritizeOverlay.classList.remove('hidden');
+        } else {
+            prioritizeOverlayContent.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
+            prioritizeOverlay.classList.remove('hidden');
+        }
+    } catch (err) {
+        prioritizeBtn.textContent = '🤖 رتّب يومي';
+        prioritizeOverlayContent.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
+        prioritizeOverlay.classList.remove('hidden');
+    }
+});
 
         function showNextTask() {
             if (!savedOrder) {
