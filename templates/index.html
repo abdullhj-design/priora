@@ -569,6 +569,19 @@
         <div id="loadingMsg">⏳ جاري التحميل...</div>
         <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
     </div>
+    <div id="deleteConfirmOverlay" class="celebration-overlay hidden">
+    <div class="celebration-box">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+        </div>
+        <h2 style="font-size: 18px;">🗑️ حذف المهمة</h2>
+        <p>متأكد تبي تحذف هذي المهمة؟</p>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" id="confirmDeleteBtn" style="flex: 1; background-color: #e74c3c;">نعم، احذف</button>
+            <button type="button" id="cancelDeleteBtn" style="flex: 1; background-color: #95a5a6;">إلغاء</button>
+        </div>
+    </div>
+</div>
 <div id="analyzeOverlay" class="celebration-overlay hidden">
     <div class="celebration-box">
         <div style="text-align: center; margin-bottom: 15px;">
@@ -655,6 +668,33 @@
         closeAnalyzeOverlay.addEventListener('click', function() {
         analyzeOverlay.classList.add('hidden');
         });
+
+        const deleteConfirmOverlay = document.getElementById('deleteConfirmOverlay');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+let taskIdToDelete = null;
+
+cancelDeleteBtn.addEventListener('click', function() {
+    deleteConfirmOverlay.classList.add('hidden');
+    taskIdToDelete = null;
+});
+
+confirmDeleteBtn.addEventListener('click', async function() {
+    if (!taskIdToDelete || isProcessing) return;
+    isProcessing = true;
+    deleteConfirmOverlay.classList.add('hidden');
+    try {
+        await fetch('/tasks/' + taskIdToDelete, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        await loadTasks();
+    } finally {
+        isProcessing = false;
+        taskIdToDelete = null;
+    }
+});
+
         let isProcessing = false;
 
         closeDailySummary.addEventListener('click', function() {
@@ -775,21 +815,10 @@
             deleteButton.type = 'button';
             deleteButton.textContent = '🗑️';
             deleteButton.classList.add('delete-btn');
-            deleteButton.addEventListener('click', async function() {
-                if (!confirm('متأكد تبي تحذف هذي المهمة؟')) return;
-                if (isProcessing) return;
-                isProcessing = true;
-                deleteButton.disabled = true;
-                try {
-                    await fetch('/tasks/' + task.id, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
-                    await loadTasks();
-                } finally {
-                    isProcessing = false;
-                }
-            });
+           deleteButton.addEventListener('click', function() {
+           taskIdToDelete = task.id;
+           deleteConfirmOverlay.classList.remove('hidden');
+          });
 
             buttonsDiv.appendChild(goalButton);
             buttonsDiv.appendChild(analyzeButton);
