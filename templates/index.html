@@ -632,6 +632,8 @@ closeCelebration.addEventListener('click', function() {
 });
 
         function createTaskElement(task) {
+                console.log('🟢 إنشاء عنصر مهمة: ' + task.title);
+
             const li = document.createElement('li');
             if (task.done) {
                 li.classList.add('completed');
