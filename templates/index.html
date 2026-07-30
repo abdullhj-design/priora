@@ -537,12 +537,7 @@
     <p id="streakDisplay" class="streak-text"></p>
 
     <div class="card">
-        <div id="analyzeResultWrapper" style="display: none; margin-bottom: 15px;">
-    <div style="text-align: center; margin-bottom: 10px;">
-        <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
-    </div>
-    <div id="analyzeResult" style="background-color: white; border: 2px solid #764ba2; border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
-</div>
+       
         <div id="prioritizeResultWrapper" style="display: none; margin-bottom: 30px;">
             <div style="text-align: center; margin-bottom: 10px;">
                 <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
@@ -574,6 +569,15 @@
         <div id="loadingMsg">⏳ جاري التحميل...</div>
         <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
     </div>
+<div id="analyzeOverlay" class="celebration-overlay hidden">
+    <div class="celebration-box">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <img src="/static/images/logo2.png" alt="Priora Logo" style="width: 50px; height: auto;">
+        </div>
+        <div id="analyzeOverlayContent" style="text-align: right; font-size: 14px; line-height: 1.6; margin-bottom: 20px;"></div>
+        <button type="button" id="closeAnalyzeOverlay">حسنًا</button>
+    </div>
+        </div>
 
     <div id="celebrationOverlay" class="celebration-overlay hidden">
         <div class="celebration-box">
@@ -644,9 +648,13 @@
         const prioritizeBtn = document.getElementById('prioritizeBtn');
         const prioritizeResult = document.getElementById('prioritizeResult');
         const prioritizeResultWrapper = document.getElementById('prioritizeResultWrapper');
-        const analyzeResult = document.getElementById('analyzeResult');
-        const analyzeResultWrapper = document.getElementById('analyzeResultWrapper');
+        const analyzeOverlay = document.getElementById('analyzeOverlay');
+        const analyzeOverlayContent = document.getElementById('analyzeOverlayContent');
+        const closeAnalyzeOverlay = document.getElementById('closeAnalyzeOverlay');
 
+        closeAnalyzeOverlay.addEventListener('click', function() {
+        analyzeOverlay.classList.add('hidden');
+        });
         let isProcessing = false;
 
         closeDailySummary.addEventListener('click', function() {
@@ -720,26 +728,26 @@
             credentials: 'include'
         });
         const data = await response.json();
-        analyzeButton.textContent = '🤖 حلل المهمة';
+        analyzeButton.textContent = '🤖 حلّل المهمة';
         analyzeButton.disabled = false;
 
         if (data.summary && data.steps) {
             let stepsText = data.steps.map(function(step, index) {
                 return (index + 1) + '. ' + step;
             }).join('<br>');
-            analyzeResult.innerHTML =
+            analyzeOverlayContent.innerHTML =
                 '<strong>📋 الملخص:</strong><br>' + data.summary +
                 '<br><br><strong>✅ الخطوات المقترحة:</strong><br>' + stepsText;
-            analyzeResultWrapper.style.display = 'block';
+            analyzeOverlay.classList.remove('hidden');
         } else {
-            analyzeResult.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
-            analyzeResultWrapper.style.display = 'block';
+            analyzeOverlayContent.innerHTML = 'حدث خطأ: ' + (data.error || 'غير معروف');
+            analyzeOverlay.classList.remove('hidden');
         }
     } catch (err) {
-        analyzeButton.textContent = '🤖 حلل المهمة';
+        analyzeButton.textContent = '🤖 حلّل المهمة';
         analyzeButton.disabled = false;
-        analyzeResult.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
-        analyzeResultWrapper.style.display = 'block';
+        analyzeOverlayContent.innerHTML = 'تعذر الاتصال بخدمة الذكاء الاصطناعي';
+        analyzeOverlay.classList.remove('hidden');
     }
 });
 
@@ -797,7 +805,6 @@
             loadingMsg.style.display = 'block';
             prioritizeResult.style.display = 'none';
             prioritizeResultWrapper.style.display = 'none';
-                analyzeResultWrapper.style.display = 'none';
 
             const response = await fetch('/tasks', {
                 credentials: 'include'
