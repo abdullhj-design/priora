@@ -713,23 +713,25 @@ confirmDeleteBtn.addEventListener('click', async function() {
             celebrationOverlay.classList.add('hidden');
         });
 
-        function checkDailySummary(tasks) {
-            const now = new Date();
-            const currentHour = now.getHours();
+       function checkDailySummary(tasks) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const today = now.toDateString();
+    const lastShown = localStorage.getItem('dailySummaryDate');
 
-            if (currentHour >= 21 && !dailySummaryShown) {
-                const doneCount = tasks.filter(function(t) { return t.done; }).length;
-                const remainingCount = tasks.length - doneCount;
-                const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+    if (currentHour >= 0 && lastShown !== today) {
+        const doneCount = tasks.filter(function(t) { return t.done; }).length;
+        const remainingCount = tasks.length - doneCount;
+        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
 
-                document.getElementById('summaryDone').textContent = '✅ أنجزت ' + doneCount + ' مهام';
-                document.getElementById('summaryRemaining').textContent = '⏳ تبقى ' + remainingCount + ' مهام';
-                document.getElementById('summaryPercent').textContent = '🎯 نسبة الإنجاز ' + percent + '%';
+        document.getElementById('summaryDone').textContent = '✅ أنجزت ' + doneCount + ' مهام';
+        document.getElementById('summaryRemaining').textContent = '⏳ تبقى ' + remainingCount + ' مهام';
+        document.getElementById('summaryPercent').textContent = '🎯 نسبة الإنجاز ' + percent + '%';
 
-                dailySummaryOverlay.classList.remove('hidden');
-                dailySummaryShown = true;
-            }
-        }
+        dailySummaryOverlay.classList.remove('hidden');
+        localStorage.setItem('dailySummaryDate', today);
+    }
+}
 
         function createTaskElement(task) {
             const li = document.createElement('li');
