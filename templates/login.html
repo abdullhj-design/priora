@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Tajawal', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #eef1f6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -26,75 +26,95 @@
 
         .card {
             background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 35px;
-            width: 320px;
+            border-radius: 20px;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
+            width: 100%;
+            max-width: 340px;
+            overflow: hidden;
+        }
+
+        .accent-bar {
+            height: 5px;
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
+        }
+
+        .card-inner {
+            padding: 32px 30px;
         }
 
         h1 {
-            color: #2c3e50;
-            font-size: 24px;
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 700;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #8a93a3;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 22px;
         }
 
         .tabs {
             display: flex;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #764ba2;
+            margin-bottom: 22px;
+            border-bottom: 1.5px solid #eef0f4;
         }
 
         .tab {
             flex: 1;
-            padding: 10px;
+            padding: 10px 0;
             text-align: center;
             cursor: pointer;
-            background-color: white;
-            color: #764ba2;
+            color: #a0a8b4;
             font-weight: 500;
-            transition: 0.2s;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1.5px;
+            transition: color 0.2s, border-color 0.2s;
         }
 
         .tab.active {
-            background-color: #764ba2;
-            color: white;
+            color: #0f172a;
+            border-bottom: 2px solid #6366f1;
         }
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 14px;
             font-size: 15px;
             font-family: 'Tajawal', Arial, sans-serif;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1.5px solid #e7e9ef;
+            border-radius: 10px;
             outline: none;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            background-color: #fbfcfe;
             transition: border-color 0.2s;
         }
 
         input:focus {
-            border-color: #764ba2;
+            border-color: #6366f1;
         }
 
         button.submit-btn {
             width: 100%;
-            padding: 12px;
-            font-size: 16px;
+            padding: 13px;
+            font-size: 15px;
             font-family: 'Tajawal', Arial, sans-serif;
-            font-weight: 500;
-            background-color: #764ba2;
+            font-weight: 700;
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            margin-top: 6px;
+            transition: opacity 0.2s;
         }
 
         button.submit-btn:hover {
-            background-color: #5e3a85;
+            opacity: 0.9;
         }
 
         .message {
@@ -108,52 +128,70 @@
         }
 
         .message.success {
-            color: #27ae60;
+            color: #16a34a;
         }
 
         .hidden {
             display: none;
         }
+
         .logo-container {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .logo-img {
-            width: 100px;
+            width: 90px;
             height: auto;
+        }
+
+        @media (max-width: 360px) {
+            body {
+                padding: 10px;
+            }
+
+            .card-inner {
+                padding: 24px 20px;
+            }
+
+            h1 {
+                font-size: 19px;
+            }
         }
     </style>
 </head>
 <body>
-    
-        <div class="card">
-    <div class="logo-container">
-        <img src="/static/images/logo.png" alt="Priora Logo" class="logo-img">
-    </div>
-    <h1>أنجز مهامك بذكاء</h1>
-    
+    <div class="card">
+        <div class="accent-bar"></div>
+        <div class="card-inner">
+            <div class="logo-container">
+                <img src="/static/images/logo.png" alt="Priora Logo" class="logo-img">
+            </div>
+            <h1>مرحبًا بعودتك</h1>
+            <div class="subtitle">أنجز مهامك بذكاء مع Priora</div>
 
-        <div class="tabs">
-            <div class="tab active" id="loginTab">تسجيل دخول</div>
-            <div class="tab" id="registerTab">حساب جديد</div>
+            <div class="tabs">
+                <div class="tab active" id="loginTab">تسجيل دخول</div>
+                <div class="tab" id="registerTab">حساب جديد</div>
+            </div>
+
+            <div id="loginForm">
+                <input type="text" id="loginUsername" placeholder="الاسم">
+                <input type="password" id="loginPassword" placeholder="كلمة المرور">
+                <button class="submit-btn" id="loginBtn">دخول</button>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="registerFirstName" placeholder="الاسم الأول" style="flex: 1;">
+                    <input type="text" id="registerLastName" placeholder="اسم العائلة" style="flex: 1;">
+                </div>
+                <input type="password" id="registerPassword" placeholder="كلمة المرور">
+                <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
+            </div>
+
+            <div id="messageBox" class="message"></div>
         </div>
-
-        <div id="loginForm">
-            <input type="text" id="loginUsername" placeholder="👤 الاسم" >
-            <input type="password" id="loginPassword" placeholder="🔒 كلمة المرور">
-            <button class="submit-btn" id="loginBtn">دخول</button>
-        </div>
-
-        <div id="registerForm" class="hidden">
-<div style="display: flex; gap: 10px;">
-    <input type="text" id="registerFirstName" placeholder=" الاسم الأول" style="flex: 1;">
-    <input type="text" id="registerLastName" placeholder="اسم العائلة" style="flex: 1;">
-</div>            <input type="password" id="registerPassword" placeholder="🔒 كلمة المرور">
-            <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
-        </div>
-
-        <div id="messageBox" class="message"></div>
     </div>
 
     <script>
@@ -206,12 +244,12 @@
 
         document.getElementById('registerBtn').addEventListener('click', async function() {
             const firstName = document.getElementById('registerFirstName').value.trim();
-const lastName = document.getElementById('registerLastName').value.trim();
-if (firstName === '' || lastName === '') {
-    alert('الرجاء إدخال الاسم الأول واسم العائلة');
-    return;
-}
-const username = firstName + ' ' + lastName;
+            const lastName = document.getElementById('registerLastName').value.trim();
+            if (firstName === '' || lastName === '') {
+                alert('الرجاء إدخال الاسم الأول واسم العائلة');
+                return;
+            }
+            const username = firstName + ' ' + lastName;
 
             const password = document.getElementById('registerPassword').value.trim();
 
