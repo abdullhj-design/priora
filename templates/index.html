@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Tajawal', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #eef1f6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -24,11 +24,10 @@
         }
 
         h1 {
-            color: white;
-            font-size: 32px;
+            color: #0f172a;
+            font-size: 28px;
             font-weight: 700;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .top-bar {
@@ -45,8 +44,8 @@
             width: auto;
             max-width: 120px;
             background: none;
-            border: 1px solid white;
-            color: white;
+            border: 1.5px solid #c7cbd4;
+            color: #5a6472;
             padding: 6px 14px;
             border-radius: 6px;
             font-size: 13px;
@@ -57,10 +56,22 @@
 
         .card {
             background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
             padding: 30px;
             width: 400px;
+            position: relative;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
         }
 
         .input-group {
@@ -81,7 +92,7 @@
         }
 
         #taskInput:focus {
-            border-color: #764ba2;
+            border-color: #6366f1;
         }
 
         button {
@@ -89,7 +100,7 @@
             font-size: 15px;
             font-family: 'Tajawal', Arial, sans-serif;
             font-weight: 500;
-            background-color: #764ba2;
+            background-color: #6366f1;
             color: white;
             border: none;
             border-radius: 8px;
@@ -98,7 +109,17 @@
         }
 
         button:hover {
-            background-color: #5e3a85;
+            background-color: #4f46e5;
+        }
+
+        #addBtn {
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
+            font-weight: 700;
+        }
+
+        #addBtn:hover {
+            opacity: 0.9;
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
         }
 
         button:disabled {
@@ -109,7 +130,7 @@
         .task-counter {
             text-align: center;
             font-size: 13px;
-            color: #764ba2;
+            color: #6366f1;
             margin-bottom: 10px;
             font-weight: 500;
         }
@@ -159,13 +180,13 @@
         }
 
         .analyze-btn {
-            background-color: #764ba2;
+            background-color: #6366f1;
             padding: 6px 12px;
             font-size: 14px;
         }
 
         .analyze-btn:hover {
-            background-color: #5e3a85;
+            background-color: #4f46e5;
         }
 
         .pin-btn {
@@ -211,7 +232,7 @@
         #loadingMsg {
             display: none;
             text-align: center;
-            color: #764ba2;
+            color: #6366f1;
             font-size: 14px;
             margin-top: 10px;
         }
@@ -260,7 +281,7 @@
             left: 25px;
             width: 55px;
             height: 55px;
-            background-color: #764ba2;
+            background: linear-gradient(135deg, #22d3ee 0%, #6366f1 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -274,13 +295,13 @@
 
         @keyframes pulse-chat {
             0% {
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0.6);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(99, 102, 241, 0.6);
             }
             70% {
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(118, 75, 162, 0);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(99, 102, 241, 0);
             }
             100% {
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(118, 75, 162, 0);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(99, 102, 241, 0);
             }
         }
 
@@ -289,7 +310,9 @@
             bottom: 90px;
             left: 25px;
             width: 300px;
+            max-width: calc(100vw - 50px);
             height: 400px;
+            max-height: 70vh;
             background-color: white;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -304,7 +327,7 @@
         }
 
         .chat-header {
-            background-color: #764ba2;
+            background-color: #6366f1;
             color: white;
             padding: 12px 15px;
             display: flex;
@@ -335,7 +358,7 @@
         }
 
         .chat-msg.user {
-            background-color: #764ba2;
+            background-color: #6366f1;
             color: white;
             margin-left: auto;
         }
@@ -451,7 +474,7 @@
         }
 
         .celebration-box h2 {
-            color: #764ba2;
+            color: #6366f1;
             font-size: 22px;
             margin-bottom: 10px;
         }
@@ -463,12 +486,12 @@
         }
 
         .celebration-box button {
-            background-color: #764ba2;
+            background-color: #6366f1;
             padding: 10px 25px;
         }
 
         .streak-text {
-            color: white;
+            color: #5a6472;
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 15px;
@@ -561,7 +584,7 @@
         </ul>
         <p id="emptyMsg" class="empty-msg hidden">لا توجد مهام حاليًا 📭</p>
         <div id="loadingMsg">⏳ جاري التحميل...</div>
-        <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px; background-color: #764ba2;">🤖 رتّب يومي</button>
+        <button type="button" id="prioritizeBtn" style="width: 100%; margin-bottom: 15px;">🤖 رتّب يومي</button>
     </div>
     <div id="prioritizeOverlay" class="celebration-overlay hidden">
     <div class="celebration-box">
