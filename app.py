@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, session, render_template
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from contextlib import contextmanager
 import mysql.connector
 import anthropic
 import json
@@ -31,6 +32,32 @@ def get_db_connection():
     )
 
 
+@contextmanager
+def db_cursor(dictionary=False):
+    """
+    يفتح اتصال وكيرسر بقاعدة البيانات، ويضمن إغلاقهما تلقائيًا
+    حتى لو صار خطأ بالنص - بدل ما نكتب conn.close() و cursor.close()
+    يدويًا بكل route على حدة.
+
+    الاستخدام:
+        with db_cursor(dictionary=True) as (conn, cursor):
+            cursor.execute(...)
+            conn.commit()  # فقط لو سويت INSERT/UPDATE/DELETE
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=dictionary)
+    try:
+        yield conn, cursor
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def require_login():
+    """يرجع True لو المستخدم مسجل دخول، وإلا None (يستخدم مع return مباشرة)"""
+    return 'user_id' in session
+
+
 @app.route('/')
 def home():
     return render_template('login.html')
@@ -43,7 +70,7 @@ def login_page():
 
 @app.route('/app-page')
 def app_page():
-    if 'user_id' not in session:
+    if not require_login():
         return render_template('login.html')
     return render_template('index.html', username=session['username'])
 
@@ -54,23 +81,17 @@ def register():
     username = data['username']
     password = data['password']
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with db_cursor() as (conn, cursor):
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        existing_user = cursor.fetchone()
 
-    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-    existing_user = cursor.fetchone()
+        if existing_user:
+            return jsonify({"error": "اسم المستخدم موجود مسبقًا"}), 400
 
-    if existing_user:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "اسم المستخدم موجود مسبقًا"}), 400
+        hashed_password = generate_password_hash(password)
+        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+        conn.commit()
 
-    hashed_password = generate_password_hash(password)
-    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
     return jsonify({"message": "تم إنشاء الحساب بنجاح"}), 201
 
 
@@ -80,14 +101,9 @@ def login():
     username = data['username']
     password = data['password']
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-    user = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
 
     if user and check_password_hash(user['password'], password):
         session['user_id'] = user['id']
@@ -105,33 +121,24 @@ def logout():
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT * FROM tasks WHERE user_id = %s ORDER BY pinned DESC, id ASC", (session['user_id'],))
+        user_tasks = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM tasks WHERE user_id = %s ORDER BY pinned DESC, id ASC", (session['user_id'],))
-    user_tasks = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
     return jsonify(user_tasks)
 
 
 @app.route('/streak', methods=['GET'])
 def get_streak():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
-    user = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
 
     today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
     current_streak = user['streak_count']
@@ -146,40 +153,30 @@ def get_streak():
 
 @app.route('/tasks', methods=['POST'])
 def add_task():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
     data = request.get_json()
     title = data['title']
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("INSERT INTO tasks (title, done, user_id) VALUES (%s, %s, %s)",
-                   (title, False, session['user_id']))
-    conn.commit()
-
-    new_task_id = cursor.lastrowid
-    cursor.close()
-    conn.close()
+    with db_cursor() as (conn, cursor):
+        cursor.execute("INSERT INTO tasks (title, done, user_id) VALUES (%s, %s, %s)",
+                       (title, False, session['user_id']))
+        conn.commit()
+        new_task_id = cursor.lastrowid
 
     return jsonify({"id": new_task_id, "title": title, "done": False}), 201
 
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
-    conn.commit()
-    deleted = cursor.rowcount
-
-    cursor.close()
-    conn.close()
+    with db_cursor() as (conn, cursor):
+        cursor.execute("DELETE FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
+        conn.commit()
+        deleted = cursor.rowcount
 
     if deleted == 0:
         return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية حذفها"}), 404
@@ -189,105 +186,86 @@ def delete_task(task_id):
 
 @app.route('/tasks/<int:task_id>/toggle', methods=['PUT'])
 def toggle_task(task_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT done FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
+        task = cursor.fetchone()
 
-    cursor.execute("SELECT done FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
-    task = cursor.fetchone()
+        if not task:
+            return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
 
-    if not task:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
+        new_status = not task['done']
+        cursor.execute("UPDATE tasks SET done = %s WHERE id = %s AND user_id = %s",
+                       (new_status, task_id, session['user_id']))
+        conn.commit()
 
-    new_status = not task['done']
-    cursor.execute("UPDATE tasks SET done = %s WHERE id = %s AND user_id = %s",
-                   (new_status, task_id, session['user_id']))
-    conn.commit()
+        cursor.execute("SELECT done FROM tasks WHERE user_id = %s", (session['user_id'],))
+        all_tasks = cursor.fetchall()
+        all_done = len(all_tasks) > 0 and all(t['done'] for t in all_tasks)
 
-    cursor.execute("SELECT done FROM tasks WHERE user_id = %s", (session['user_id'],))
-    all_tasks = cursor.fetchall()
-    all_done = len(all_tasks) > 0 and all(t['done'] for t in all_tasks)
+        if all_done:
+            cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
 
-    if all_done:
-        cursor.execute("SELECT streak_count, last_completed_date FROM users WHERE id = %s", (session['user_id'],))
-        user = cursor.fetchone()
+            today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
 
-        today = datetime.now(pytz.timezone('Asia/Riyadh')).date()
+            if user['last_completed_date'] is None or str(user['last_completed_date']) != str(today):
+                if user['last_completed_date'] is not None and (today - user['last_completed_date']).days == 1:
+                    new_streak = user['streak_count'] + 1
+                else:
+                    new_streak = 1
 
-        if user['last_completed_date'] is None or str(user['last_completed_date']) != str(today):
-            if user['last_completed_date'] is not None and (today - user['last_completed_date']).days == 1:
-                new_streak = user['streak_count'] + 1
-            else:
-                new_streak = 1
+                cursor.execute("UPDATE users SET streak_count = %s, last_completed_date = %s WHERE id = %s",
+                               (new_streak, today, session['user_id']))
+                conn.commit()
 
-            cursor.execute("UPDATE users SET streak_count = %s, last_completed_date = %s WHERE id = %s",
-                           (new_streak, today, session['user_id']))
-            conn.commit()
-
-    cursor.close()
-    conn.close()
     return jsonify({"id": task_id, "done": new_status}), 200
 
 
 @app.route('/tasks/<int:task_id>/pin', methods=['PUT'])
 def pin_task(task_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT pinned FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
+        task = cursor.fetchone()
 
-    cursor.execute("SELECT pinned FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
-    task = cursor.fetchone()
+        if not task:
+            return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
 
-    if not task:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
+        new_status = not task['pinned']
+        cursor.execute("UPDATE tasks SET pinned = %s WHERE id = %s AND user_id = %s",
+                       (new_status, task_id, session['user_id']))
+        conn.commit()
 
-    new_status = not task['pinned']
-    cursor.execute("UPDATE tasks SET pinned = %s WHERE id = %s AND user_id = %s",
-                   (new_status, task_id, session['user_id']))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
     return jsonify({"id": task_id, "pinned": new_status}), 200
 
 
 @app.route('/tasks/<int:task_id>/set-goal', methods=['PUT'])
 def set_daily_goal(task_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with db_cursor() as (conn, cursor):
+        cursor.execute("UPDATE tasks SET is_daily_goal = FALSE WHERE user_id = %s", (session['user_id'],))
+        cursor.execute("UPDATE tasks SET is_daily_goal = TRUE WHERE id = %s AND user_id = %s",
+                       (task_id, session['user_id']))
+        conn.commit()
 
-    cursor.execute("UPDATE tasks SET is_daily_goal = FALSE WHERE user_id = %s", (session['user_id'],))
-    cursor.execute("UPDATE tasks SET is_daily_goal = TRUE WHERE id = %s AND user_id = %s",
-                   (task_id, session['user_id']))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
     return jsonify({"id": task_id, "is_daily_goal": True}), 200
 
 
 @app.route('/tasks/<int:task_id>/analyze', methods=['GET'])
 def analyze_task(task_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT title FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
-    task = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT title FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
+        task = cursor.fetchone()
 
     if not task:
         return jsonify({"error": "المهمة غير موجودة"}), 404
@@ -322,15 +300,12 @@ def analyze_task(task_id):
 
 @app.route('/tasks/prioritize', methods=['GET'])
 def prioritize_tasks():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id, title FROM tasks WHERE user_id = %s AND done = 0", (session['user_id'],))
-    tasks = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT id, title FROM tasks WHERE user_id = %s AND done = 0", (session['user_id'],))
+        tasks = cursor.fetchall()
 
     if not tasks:
         return jsonify({"message": "لا توجد مهام غير مكتملة لترتيبها"}), 200
@@ -364,7 +339,7 @@ def prioritize_tasks():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
     data = request.get_json()
@@ -392,15 +367,12 @@ def chat():
 
 @app.route('/admin')
 def admin_page():
-    if 'user_id' not in session:
+    if not require_login():
         return render_template('login.html')
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
 
     if not user or not user['is_admin']:
         return "غير مصرح لك بالدخول لهذي الصفحة", 403
@@ -410,70 +382,53 @@ def admin_page():
 
 @app.route('/admin/users', methods=['GET'])
 def admin_get_users():
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+        current_user = cursor.fetchone()
 
-    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
-    current_user = cursor.fetchone()
+        if not current_user or not current_user['is_admin']:
+            return jsonify({"error": "غير مصرح"}), 403
 
-    if not current_user or not current_user['is_admin']:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "غير مصرح"}), 403
+        cursor.execute("SELECT id, username, is_admin FROM users")
+        all_users = cursor.fetchall()
 
-    cursor.execute("SELECT id, username, is_admin FROM users")
-    all_users = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT tasks.id, tasks.title, tasks.done, users.username
-        FROM tasks
-        JOIN users ON tasks.user_id = users.id
-    """)
-    all_tasks = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
+        cursor.execute("""
+            SELECT tasks.id, tasks.title, tasks.done, users.username
+            FROM tasks
+            JOIN users ON tasks.user_id = users.id
+        """)
+        all_tasks = cursor.fetchall()
 
     return jsonify({"users": all_users, "tasks": all_tasks})
 
 
 @app.route('/admin/users/<int:user_id>', methods=['DELETE'])
 def admin_delete_user(user_id):
-    if 'user_id' not in session:
+    if not require_login():
         return jsonify({"error": "يجب تسجيل الدخول"}), 401
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with db_cursor(dictionary=True) as (conn, cursor):
+        cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
+        current_user = cursor.fetchone()
 
-    cursor.execute("SELECT is_admin FROM users WHERE id = %s", (session['user_id'],))
-    current_user = cursor.fetchone()
+        if not current_user or not current_user['is_admin']:
+            return jsonify({"error": "غير مصرح"}), 403
 
-    if not current_user or not current_user['is_admin']:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "غير مصرح"}), 403
-
-    cursor.execute("DELETE FROM tasks WHERE user_id = %s", (user_id,))
-    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
+        cursor.execute("DELETE FROM tasks WHERE user_id = %s", (user_id,))
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
 
     return jsonify({"message": "تم حذف المستخدم"}), 200
 
 
 def delete_all_tasks():
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks")
-        conn.commit()
-        cursor.close()
-        conn.close()
+        with db_cursor() as (conn, cursor):
+            cursor.execute("DELETE FROM tasks")
+            conn.commit()
         print(f"[{datetime.now()}] تم حذف جميع المهام تلقائيًا")
     except Exception as e:
         print(f"[{datetime.now()}] خطأ بحذف المهام: {str(e)}")
