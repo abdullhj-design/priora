@@ -10,7 +10,12 @@ from datetime import datetime
 import pytz
 
 app = Flask(__name__)
-app.secret_key = 'my-secret-key-2026'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
+if not app.secret_key:
+    raise RuntimeError(
+        "FLASK_SECRET_KEY غير مضبوط. أضفه كمتغير بيئة (Environment Variable) "
+        "على Railway قبل تشغيل التطبيق."
+    )
 CORS(app, supports_credentials=True)
 app.config['JSON_AS_ASCII'] = False
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
@@ -20,7 +25,7 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.environ.get('MYSQLHOST', 'localhost'),
         user=os.environ.get('MYSQLUSER', 'root'),
-        password=os.environ.get('MYSQLPASSWORD', '0000'),
+        password=os.environ.get('MYSQLPASSWORD'),
         database=os.environ.get('MYSQLDATABASE', 'sahb_taskes'),
         port=os.environ.get('MYSQLPORT', 3306)
     )
@@ -163,14 +168,22 @@ def add_task():
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM tasks WHERE id = %s", (task_id,))
+    cursor.execute("DELETE FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
     conn.commit()
+    deleted = cursor.rowcount
 
     cursor.close()
     conn.close()
+
+    if deleted == 0:
+        return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية حذفها"}), 404
+
     return jsonify({"message": "تم الحذف"}), 200
 
 
@@ -182,11 +195,17 @@ def toggle_task(task_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT done FROM tasks WHERE id = %s", (task_id,))
+    cursor.execute("SELECT done FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
     task = cursor.fetchone()
 
+    if not task:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
+
     new_status = not task['done']
-    cursor.execute("UPDATE tasks SET done = %s WHERE id = %s", (new_status, task_id))
+    cursor.execute("UPDATE tasks SET done = %s WHERE id = %s AND user_id = %s",
+                   (new_status, task_id, session['user_id']))
     conn.commit()
 
     cursor.execute("SELECT done FROM tasks WHERE user_id = %s", (session['user_id'],))
@@ -216,14 +235,23 @@ def toggle_task(task_id):
 
 @app.route('/tasks/<int:task_id>/pin', methods=['PUT'])
 def pin_task(task_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "يجب تسجيل الدخول"}), 401
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT pinned FROM tasks WHERE id = %s", (task_id,))
+    cursor.execute("SELECT pinned FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
     task = cursor.fetchone()
 
+    if not task:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "المهمة غير موجودة أو لا تملك صلاحية تعديلها"}), 404
+
     new_status = not task['pinned']
-    cursor.execute("UPDATE tasks SET pinned = %s WHERE id = %s", (new_status, task_id))
+    cursor.execute("UPDATE tasks SET pinned = %s WHERE id = %s AND user_id = %s",
+                   (new_status, task_id, session['user_id']))
     conn.commit()
 
     cursor.close()
@@ -240,7 +268,8 @@ def set_daily_goal(task_id):
     cursor = conn.cursor()
 
     cursor.execute("UPDATE tasks SET is_daily_goal = FALSE WHERE user_id = %s", (session['user_id'],))
-    cursor.execute("UPDATE tasks SET is_daily_goal = TRUE WHERE id = %s", (task_id,))
+    cursor.execute("UPDATE tasks SET is_daily_goal = TRUE WHERE id = %s AND user_id = %s",
+                   (task_id, session['user_id']))
     conn.commit()
 
     cursor.close()
@@ -255,7 +284,7 @@ def analyze_task(task_id):
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT title FROM tasks WHERE id = %s", (task_id,))
+    cursor.execute("SELECT title FROM tasks WHERE id = %s AND user_id = %s", (task_id, session['user_id']))
     task = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -456,4 +485,5 @@ scheduler.start()
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug_mode)
