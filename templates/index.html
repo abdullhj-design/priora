@@ -388,6 +388,22 @@
             font-size: 13px;
         }
 
+        #chatMicBtn {
+            background-color: #eef1f6;
+            color: #6366f1;
+            flex: 0 0 auto;
+        }
+
+        #chatMicBtn:hover {
+            background-color: #e2e6ee;
+        }
+
+        #chatMicBtn.listening {
+            background: linear-gradient(135deg, #22d3ee 0%, #6366f1 100%);
+            color: white;
+            animation: pulse-chat 1.2s infinite;
+        }
+
         .top-logo {
             width: 100px;
             height: auto;
@@ -647,6 +663,7 @@
         <div id="chatMessages" class="chat-messages"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
+            <button type="button" id="chatMicBtn" title="تحدث بدل الكتابة">🎤</button>
             <button type="button" id="chatSendBtn">إرسال</button>
         </div>
     </div>
@@ -1034,6 +1051,48 @@ confirmDeleteBtn.addEventListener('click', async function() {
                 sendChatMessage();
             }
         });
+
+        // 🎤 تحويل الصوت إلى نص بمربع الشات (يعمل على المتصفحات الداعمة فقط، مثل كروم)
+        const chatMicBtn = document.getElementById('chatMicBtn');
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognitionAPI) {
+            // المتصفح ما يدعم الميزة (مثل Safari/Firefox) — نخفي الزر بدل ما يعطي خطأ
+            chatMicBtn.style.display = 'none';
+        } else {
+            const recognition = new SpeechRecognitionAPI();
+            recognition.lang = 'ar-SA';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            let isListening = false;
+
+            recognition.addEventListener('result', function(event) {
+                const transcript = event.results[0][0].transcript;
+                chatInput.value = transcript;
+                chatInput.focus();
+            });
+
+            recognition.addEventListener('end', function() {
+                isListening = false;
+                chatMicBtn.classList.remove('listening');
+            });
+
+            recognition.addEventListener('error', function() {
+                isListening = false;
+                chatMicBtn.classList.remove('listening');
+            });
+
+            chatMicBtn.addEventListener('click', function() {
+                if (isListening) {
+                    recognition.stop();
+                    return;
+                }
+                isListening = true;
+                chatMicBtn.classList.add('listening');
+                recognition.start();
+            });
+        }
 
         prioritizeBtn.addEventListener('click', async function() {
           prioritizeBtn.textContent = '⏳ جاري الترتيب...';
